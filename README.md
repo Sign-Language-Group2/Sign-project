@@ -48,7 +48,7 @@ python --version
 ```
 It should display Python 3.10.11.
 
-```
+
 
 * Install the required dependencies by running:
 
