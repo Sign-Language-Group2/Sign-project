@@ -48,27 +48,6 @@ python --version
 ```
 It should display Python 3.10.11.
 
-
-* Create an empty init file by running the following command:
-
-```
-touch __init__.py
-```
-
-* Change to the "Game" directory:
-
-```
-cd Game
-```
-* Create another empty init file inside the "Game" directory:
-
-```
-touch __init__.py
-```
-* Go back to the parent directory:
-
-```
-cd ..
 ```
 
 * Install the required dependencies by running:
