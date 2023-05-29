@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(1, r'c:\users\myips\desktop\signproject\sign-project\.venv\lib\site-packages')
+
 import pickle
 import random
 import cv2
@@ -200,6 +203,8 @@ class Game:
             return 3
         else:
             return 1
+
+
 
     def random_level(self, total_time=20, character_change_time=5,game_level=1):
 
@@ -439,33 +444,35 @@ class Game:
         # Create the main window
         self.learn_level_window = tk.Toplevel()
         self.learn_level_window.geometry("1000x1000")  # Set the window size
-
+        
         # Set the title and logo
         self.learn_level_window.title("How To Play")
-        self.learn_level_window.configure(bg="#161219")
+        self.learn_level_window.iconbitmap(r'Game\game_data\Red And Yellow Illustration Rock Music (1).ico')
+
+        self.learn_level_window.configure(bg="blue")
 
         # Create a frame to hold the left half content
         left_frame = tk.Frame(self.learn_level_window)
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
+        left_frame.pack(padx=10,pady=10,side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
     
         # Add an logo
-        image = Image.open("./Game/game_data/Red And Yellow Illustration Rock Music (1).png")
-        image = image.resize((250, 250), Image.LANCZOS)
-        logo = ImageTk.PhotoImage(image)
-        logo_label = tk.Label(left_frame, image=logo, highlightthickness=0, borderwidth=0)
-        logo_label.image = logo
-        self.widgets["logo"].append(logo_label)
-        logo_label.pack(pady=(0, 0))  # Centered vertically with 50 pixels padding at the top
+        # image = Image.open("./Game/game_data/Red And Yellow Illustration Rock Music (1).png")
+        # image = image.resize((250, 250), Image.LANCZOS)
+        # logo = ImageTk.PhotoImage(image)
+        # logo_label = tk.Label(left_frame, image=logo, highlightthickness=0, borderwidth=0)
+        # logo_label.image = logo
+        # self.widgets["logo"].append(logo_label)
+        # logo_label.pack(pady=(0, 0))  # Centered vertically with 50 pixels padding at the top
 
 
         # Add an image on the left side
         char_signs = Image.open("./Game/game_data/chars.png")
         char_signs_title = ImageTk.PhotoImage(char_signs)
-        char_signs_title_label = tk.Label(left_frame, image=char_signs_title, highlightthickness=0, borderwidth=0)
+        char_signs_title_label = tk.Label(left_frame, image=char_signs_title, highlightthickness=0, borderwidth=0,bg="blue")
         char_signs_title_label.image = char_signs_title
         self.widgets['char_signs'].append(char_signs_title_label)
-        char_signs_title_label.place(x=10, y=200) 
+        char_signs_title_label.place(x=10, y=200 ) 
 
    
 
@@ -475,7 +482,7 @@ class Game:
 
         # Create a canvas on the right side
         self.canvas = tk.Canvas(right_frame, bg="#161219")
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas.pack(padx=10,pady=10,fill=tk.BOTH, expand=True)
 
     
         # Start a thread to update the camera feed
@@ -500,6 +507,7 @@ class Game:
         self.game_menu_window = tk.Tk()
         self.game_menu_window.geometry("800x600")
         self.game_menu_window.title("Play Game")
+        self.game_menu_window.iconbitmap(r'Game\game_data\Red And Yellow Illustration Rock Music (1).ico')
 
         # Add the game content
         game_label = tk.Label(self.game_menu_window, text="Game Content")
@@ -508,6 +516,11 @@ class Game:
         # Add a button to start the game
         
         self.random_1_button = tk.Button(self.game_menu_window, text="Start Game", command=self.random_level)
+        # self.random_1_button = tk.Button(self.game_menu_window, text="Start Game", command=self.random_level,
+        #                                  bg="#3366CC", fg="#FFFFFF", bd=0,
+        #                                  activebackground="#224499", activeforeground="#FFFFFF",
+        #                                  padx=10, pady=5, font=("Arial", 12, "bold"))
+        
         self.random_1_button.pack()
 
         # Add a "Back" button to return to the main menu
@@ -531,6 +544,7 @@ class Game:
 
         # Set the title and logo
         self.Main_window.title("SignSaga")
+        self.Main_window.iconbitmap(r'Game\game_data\Red And Yellow Illustration Rock Music (1).ico')
         self.Main_window.configure(bg="#161219")
 
 
