@@ -5,6 +5,17 @@ import mediapipe as mp
 import numpy as np
 import time
 
+import customtkinter as ctk
+import tkinter as tk
+import cv2
+from PIL import ImageTk, Image
+import threading
+
+from Game.rounded_button_class import RoundedButton
+
+
+
+
 class Game:
     def __init__(self, model_path):
         # Load the model from the specified path using pickle
@@ -46,6 +57,38 @@ class Game:
         self.random_character_change_time_seconds = 0
 
         self.total_score = 0
+
+        self.Max_score_level_1 = 0
+
+
+        self.game_terminating = False
+
+        self.image_tk = None 
+        self.opening_image_tk= None
+
+        self.game_menu_window = None
+        self.Main_window = None
+        self.learn_level_window = None
+        self.random_level_window = None
+
+        self.canvas= None
+        self.camera_thread= None
+
+        self.learn_button = None
+        self.Start_Play_button = None
+
+        self.random_1_button = None
+        self.back_button = None
+
+
+        self.widgets = {
+                        "logo": [],
+                        "logo_main": [],    
+                        "play_button": [],
+                        "how_to_play_button": [],
+                        "char_signs": [],
+                        "return_home_button": [],
+                        }
 
     def generate_random_character(self):
         # Randomly choose a character from the labels_dict values
@@ -151,137 +194,385 @@ class Game:
                 self.counter=None
                 self.current_prediction_character=None
 
-    def destroy_game_windows(self):
-        self.cap.release()
-        cv2.destroyAllWindows()
-
-    def learn_level(self):
-        #gui start game
-
-
-        #start game
-        while True:
-            ret, frame = self.cap.read()
-            # Detect gestures from the frame
-            self.detect_gesture(frame)
-            cv2.imshow('frame', frame)
-
-            # Break the loop if the user presses q
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-            #if gui x brak
-
-        #gui print total score
-
-
-
-        time.sleep(5)
-        self.destroy_game_windows()
 
     def calculate_score(self,prediction_time_seconds):
-        if prediction_time_seconds < 2:
+        if prediction_time_seconds <= 2:
             return 3
         else:
             return 1
 
-    def random_level(self, total_time=20, character_change_time=5):
+    def random_level(self, total_time=20, character_change_time=5,game_level=1):
 
-        # Set total game time and character change time
-        self.total_game_time_seconds = total_time
-        self.random_character_change_time_seconds = character_change_time
+        self.game_terminating = False
 
-        # Start the game timer
-        game_start_time = time.time()
-        prediction_start_time = time.time()
-        prediction_time_seconds = 0
+        def on_closing():
+            self.game_terminating = True
+            
 
-        # GUI start game
+        def update_camera():
+            # disabled buttons:
+            self.random_1_button.config(state='disabled')
+            self.back_button.config(state='disabled')
+
+            # camera fix
+            ret, frame = self.cap.read()
+            if not ret:
+                self.cap = cv2.VideoCapture(0)
+
+            # game logic
+            # --------------------------------
+             # Set total game time and character change time
+            self.total_game_time_seconds = total_time
+            self.random_character_change_time_seconds = character_change_time
+
+            # Start the game timer
+            game_start_time = time.time()
+            prediction_start_time = time.time()
+            prediction_time_seconds = 0
+
+            # Generate initial random character
+            self.generate_random_character()
+
+            # Set initial values for the components
+            if game_level==1:
+                max_score_value.set(self.Max_score_level_1)
+            character_value.set(self.random_character)
+            total_score_value.set(str(self.total_score))
+            total_time_value.set(str(self.total_game_time_seconds))
+            prediction_time_value.set(str(self.random_character_change_time_seconds))
+
+            # Start game
+            while not self.game_terminating:
+                ret, frame = self.cap.read()
+
+                # Detect gestures from the frame
+                self.detect_gesture(frame)
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB
+                img = Image.fromarray(frame)  # Create an Image object from the frame
+                img = img.resize((400, 400))  # Adjust the size of the image as needed
+                img = ImageTk.PhotoImage(img)  # Create an ImageTk object
+
+                self.canvas.create_image(0, 0, anchor=tk.NW, image=img)  # Display the image on the canvas
+                self.canvas.image = img  # Save a reference to the image to prevent it from being garbage collected
+                
+                # Calculate time left for change character
+                prediction_time_left =int(self.random_character_change_time_seconds) - (int(time.time()) - int(prediction_start_time))
+                
+                # GUI update time left for change character
+                #print(prediction_time_left)
+                prediction_time_value.set(str(prediction_time_left))
+
+                # Check if it's time to change the random character
+                if time.time() - prediction_start_time >= self.random_character_change_time_seconds:
+                    self.generate_random_character()
+
+                    # GUI update character
+                    #print("####### random {} #######".format(self.random_character))
+                    character_value.set(self.random_character)
+                    
+                    prediction_start_time = time.time()
+
+                if self.random_character == self.current_prediction_character and self.current_prediction_character is not None:
+                    # Calculate time taken for prediction
+                    prediction_time_seconds = time.time() - prediction_start_time
+                    #update score
+                    self.total_score += self.calculate_score(prediction_time_seconds)
+                    
+                    prediction_start_time = time.time()
+                    self.current_prediction_character= None
+
+                    # GUI Total Score
+                    #print(self.total_score)
+                    total_score_value.set(str(self.total_score))
+                  
+                    
+                    # Generate a new random character
+                    self.generate_random_character()
+
+                    # GUI update character
+                    # print("####### random {} #######".format(self.random_character))
+                    character_value.set(self.random_character)
 
 
-        # Generate initial random character
-        self.generate_random_character()
+                elapsed_time = time.time() - game_start_time
+                total_time_left = int(self.total_game_time_seconds) - int(elapsed_time)
+                #print(total_time_left)
+                # GUI update total time left 
+                total_time_value.set(str(total_time_left))
 
-        # GUI initial character and Total score
-        print("####### random {} #######".format(self.random_character))
-        print(self.total_score)
+                # Break the loop if the total game time is reached
+                if int(elapsed_time) >= int(self.total_game_time_seconds):
+                    self.game_terminating=True
+                    continue  
+            else:
+                # reset total score
+                if self.total_score > self.Max_score_level_1:
+                    self.Max_score_level_1 = self.total_score
+                self.total_score = 0
+                # 
+                self.cap.release()  # Release the camera
+                self.canvas.delete("all")  # Clear the canvas when the camera feed ends
+                self.random_level_window.destroy()  # Close the window
+                # Enable buttons:
+                self.random_1_button.config(state='normal')
+                self.back_button.config(state='normal')
+            # ---------------------------------
+
+            
+
+        # Create the main window
+        self.random_level_window = tk.Toplevel()
+        self.random_level_window.geometry("800x600")  # Set the window size
+
+        # Set the title and logo
+        self.random_level_window.title("My Window")
+
+        # Create a frame to hold the left half content
+        left_frame = tk.Frame(self.random_level_window)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Create StringVar variables for the component values
+        max_score_value = tk.StringVar()
+        character_value = tk.StringVar()
+        total_score_value = tk.StringVar()
+        total_time_value = tk.StringVar()
+        prediction_time_value = tk.StringVar()
 
         
-        # Start game
-        while True:
-            ret, frame = self.cap.read()
+        # Add label for character
+        max_score_label = tk.Label(left_frame, text="Max score:")
+        max_score_label.pack()
+        max_score_label = tk.Label(left_frame, textvariable= max_score_value)
+        max_score_label.pack()
 
-            # Detect gestures from the frame
-            self.detect_gesture(frame)
-            cv2.imshow('frame', frame)
+        # Add label for character
+        character_label = tk.Label(left_frame, text="Character:")
+        character_label.pack()
+        character_display = tk.Label(left_frame, textvariable=character_value)
+        character_display.pack()
 
-            # Calculate time left for change character
-            prediction_time_left =int(self.random_character_change_time_seconds) - (int(time.time()) - int(prediction_start_time))
+        # Add label for total score
+        total_score_label = tk.Label(left_frame, text="Total Score:")
+        total_score_label.pack()
+        total_score_display = tk.Label(left_frame, textvariable=total_score_value)
+        total_score_display.pack()
+
+        # Add label for total time left
+        total_time_label = tk.Label(left_frame, text="Total Time Left:")
+        total_time_label.pack()
+        total_time_display = tk.Label(left_frame, textvariable=total_time_value)
+        total_time_display.pack()
+
+        # Add label for prediction time left
+        prediction_time_label = tk.Label(left_frame, text="Prediction Time Left:")
+        prediction_time_label.pack()
+        prediction_time_display = tk.Label(left_frame, textvariable=prediction_time_value)
+        prediction_time_display.pack()
+
+        # Create a frame to hold the right half content
+        right_frame = tk.Frame(self.random_level_window)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Create a canvas on the right side
+        self.canvas = tk.Canvas(right_frame, bg="white")
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
+        # Start a thread to update the camera feed
+        self.camera_thread = threading.Thread(target=update_camera)
+        self.camera_thread.daemon = True
+        self.camera_thread.start()
+
+        # Bind the window closing event to the on_closing function
+        self.random_level_window.protocol("WM_DELETE_WINDOW", on_closing)
+
+        # Run the main loop
+        self.random_level_window.mainloop()
+
+
+
+    def learn_level(self):
+
+        self.game_terminating = False
+
+        def on_closing():
+            self.game_terminating = True
             
-            # GUI update time left for change character
-            #print(prediction_time_left)
+        def update_camera():
+            # disabled buttons:
+            self.learn_button.config(state='disabled')
+            self.Start_Play_button.config(state='disabled')
+
+            # fix camera
+            ret, frame = self.cap.read()
+            if not ret:
+                self.cap = cv2.VideoCapture(0)
+
+            # game logic
+            # --------------------------------
+            while not self.game_terminating:
+                ret, frame = self.cap.read()
+                if not ret:
+                    break
+                # Detect gestures from the frame
+                self.detect_gesture(frame)
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB
+                img = Image.fromarray(frame)  # Create an Image object from the frame
+                img = img.resize((400, 400))  # Adjust the size of the image as needed
+                img = ImageTk.PhotoImage(img)  # Create an ImageTk object
+
+                self.canvas.create_image(0, 0, anchor=tk.NW, image=img)  # Display the image on the canvas
+                self.canvas.image = img  # Save a reference to the image to prevent it from being garbage collected
+            else:
+                self.canvas.delete("all")  # Clear the canvas when the camera feed ends
+                self.cap.release()  # Release the camera
+                self.learn_level_window.destroy()  # Close the window
+                # Enable buttons:
+                self.learn_button.config(state='normal')
+                self.Start_Play_button.config(state='normal')
+
+             # --------------------------------
+
+        
+
+        # Create the main window
+        self.learn_level_window = tk.Toplevel()
+        self.learn_level_window.geometry("1000x1000")  # Set the window size
+
+        # Set the title and logo
+        self.learn_level_window.title("How To Play")
+        self.learn_level_window.configure(bg="#161219")
+
+        # Create a frame to hold the left half content
+        left_frame = tk.Frame(self.learn_level_window)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    
+        # Add an logo
+        image = Image.open("./Game/game_data/Red And Yellow Illustration Rock Music (1).png")
+        image = image.resize((250, 250), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_label = tk.Label(left_frame, image=logo, highlightthickness=0, borderwidth=0)
+        logo_label.image = logo
+        self.widgets["logo"].append(logo_label)
+        logo_label.pack(pady=(0, 0))  # Centered vertically with 50 pixels padding at the top
+
+
+        # Add an image on the left side
+        char_signs = Image.open("./Game/game_data/chars.png")
+        char_signs_title = ImageTk.PhotoImage(char_signs)
+        char_signs_title_label = tk.Label(left_frame, image=char_signs_title, highlightthickness=0, borderwidth=0)
+        char_signs_title_label.image = char_signs_title
+        self.widgets['char_signs'].append(char_signs_title_label)
+        char_signs_title_label.place(x=10, y=200) 
+
+   
+
+        # Create a frame to hold the right half content
+        right_frame = tk.Frame(self.learn_level_window)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Create a canvas on the right side
+        self.canvas = tk.Canvas(right_frame, bg="#161219")
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
+    
+        # Start a thread to update the camera feed
+        self.camera_thread = threading.Thread(target=update_camera)
+        self.camera_thread.daemon = True
+        self.camera_thread.start()
+
+
+        # Bind the window closing event to the on_closing function
+        self.learn_level_window.protocol("WM_DELETE_WINDOW", on_closing)
+
+        # Run the main loop
+        self.learn_level_window.mainloop()
+
+
+    def open_game_menu(self):
+        # Clear the main menu window
+        if  self.Main_window != None:
+            self.Main_window.destroy()
+
+        # Create the play game menu window
+        self.game_menu_window = tk.Tk()
+        self.game_menu_window.geometry("800x600")
+        self.game_menu_window.title("Play Game")
+
+        # Add the game content
+        game_label = tk.Label(self.game_menu_window, text="Game Content")
+        game_label.pack()
+
+        # Add a button to start the game
+        
+        self.random_1_button = tk.Button(self.game_menu_window, text="Start Game", command=self.random_level)
+        self.random_1_button.pack()
+
+        # Add a "Back" button to return to the main menu
+        self.back_button = tk.Button(self.game_menu_window, text="Back", command=self.open_main_menu)
+        self.back_button.pack()
+
+        # Run the play game menu loop
+        self.game_menu_window.mainloop()
+
+
+    def open_main_menu(self):
+        # Clear the game menu window
+        if self.game_menu_window != None:
+            self.game_menu_window.destroy()
+
+
+        # Create the main window
+        self.Main_window = tk.Tk()
+        self.Main_window.geometry("1000x1000")  # Set the window size
+        
+
+        # Set the title and logo
+        self.Main_window.title("SignSaga")
+        self.Main_window.configure(bg="#161219")
+
+
+        # Display logos
+        image = Image.open("./Game/game_data/Red And Yellow Illustration Rock Music (1).png")
+        image = image.resize((250, 250), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_label = tk.Label(self.Main_window, image=logo, highlightthickness=0, borderwidth=0)
+        logo_label.image = logo
+        self.widgets["logo"].append(logo_label)
+        logo_label.pack(pady=(0, 0))  # Centered vertically with 50 pixels padding at the top
 
 
 
-            # Check if it's time to change the random character
-            if time.time() - prediction_start_time >= self.random_character_change_time_seconds:
-                self.generate_random_character()
-
-                # GUI update character
-                print("####### random {} #######".format(self.random_character))
-
-                prediction_start_time = time.time()
-
-            if self.random_character == self.current_prediction_character and self.current_prediction_character is not None:
-                # Calculate time taken for prediction
-                prediction_time_seconds = time.time() - prediction_start_time
-                #update score
-                self.total_score += self.calculate_score(prediction_time_seconds)
-                
-                prediction_start_time = time.time()
-                self.current_prediction_character= None
-
-                # GUI Total Score
-                print(self.total_score)
-                
-                # Generate a new random character
-                self.generate_random_character()
-
-                # GUI update character
-                print("####### random {} #######".format(self.random_character))
+        # # Display main logos
+        # image_main = Image.open("./Game/game_data/Screenshot from 2023-05-27 04-22-49.png")
+        # logo_main = ImageTk.PhotoImage(image_main)
+        # logo_main_label = tk.Label(self.Main_window, image=logo_main, highlightthickness=0, borderwidth=0)
+        # logo_main_label.image = logo_main
+        # self.widgets["logo_main"].append(logo_main_label)
+        # logo_main_label.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
 
 
 
-                
+        # Add a button to open play_game_menu
+        self.Start_Play_button = RoundedButton(self.Main_window, text="New Game",command=self.open_game_menu)
+        self.widgets["play_button"].append(self.Start_Play_button)
+        self.Start_Play_button.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
+
+        # Add a button to open How to Play
+        self.learn_button = RoundedButton(self.Main_window, text="How to Play",command=self.learn_level)
+        self.widgets["how_to_play_button"].append(self.learn_button)
+        self.learn_button.pack(pady=(50, 0))  # Centered vertically with 
 
 
-            # Break the loop if the user presses q
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-            # Break the loop if the total game time is reached
-            elapsed_time = time.time() - game_start_time
-            if int(elapsed_time) >= int(self.total_game_time_seconds):
-                break
-
-            total_time_left = int(self.total_game_time_seconds) - int(elapsed_time)
-            #print(total_time_left)
-            # GUI update total time left 
-
-
-
-            # if GUI x break
-
-        # GUI print total score
-
-        print("Total Score:", self.total_score)
-
-        # time.sleep(5)
-        self.destroy_game_windows()
+        # Run the main loop
+        self.Main_window.mainloop()
 
     def start_game(self):
+        self.open_main_menu()
 
-        self.random_level()
+
 
         
 
