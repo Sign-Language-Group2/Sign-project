@@ -16,6 +16,7 @@ from Game.rounded_button_class import RoundedButton
 
 
 
+
 class Game:
     def __init__(self, model_path):
         # Load the model from the specified path using pickle
