@@ -1,18 +1,26 @@
 import sys
-sys.path.insert(1, r'c:\users\myips\desktop\signproject\sign-project\.venv\lib\site-packages')
-
 import pickle
 import random
-import cv2
-import mediapipe as mp
 import numpy as np
 import time
-
 import customtkinter as ctk
 import tkinter as tk
 import cv2
-from PIL import ImageTk, Image
+
 import threading
+try:
+    
+    from PIL import ImageTk, Image
+    import cv2
+    import mediapipe as mp
+except :
+    
+    sys.path.insert(1, r'c:\users\myips\desktop\signproject\sign-project\.venv\lib\site-packages')
+    from PIL import ImageTk, Image
+    import cv2
+    import mediapipe as mp  
+
+    
 
 from Game.rounded_button_class import RoundedButton
 
