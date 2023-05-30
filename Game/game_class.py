@@ -7,6 +7,9 @@ import time
 
 import customtkinter as ctk
 import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
+
 import cv2
 from PIL import ImageTk, Image
 import threading
@@ -81,15 +84,11 @@ class Game:
         self.random_1_button = None
         self.back_button = None
 
-
-        self.widgets = {
-                        "logo": [],
-                        "logo_main": [],    
-                        "play_button": [],
-                        "how_to_play_button": [],
-                        "char_signs": [],
-                        "return_home_button": [],
-                        }
+        self.backround_color="#212121"
+        self.text_color="#59e7ed"
+        self.border_color='#323232'
+        self.logo_path="./Game/game_data/logo-3.png"
+        self.stopwatch_path ="./Game/game_data/stopwatch.png"
 
     def generate_random_character(self):
         # Randomly choose a character from the labels_dict values
@@ -240,6 +239,7 @@ class Game:
             character_value.set(self.random_character)
             total_score_value.set(str(self.total_score))
             total_time_value.set(str(self.total_game_time_seconds))
+            total_time_value_temp['amountused'] = self.total_game_time_seconds
             prediction_time_value.set(str(self.random_character_change_time_seconds))
 
             # Start game
@@ -249,14 +249,20 @@ class Game:
                 # Detect gestures from the frame
                 self.detect_gesture(frame)
 
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB                
                 img = Image.fromarray(frame)  # Create an Image object from the frame
                 img = img.resize((400, 400))  # Adjust the size of the image as needed
-                img = ImageTk.PhotoImage(img)  # Create an ImageTk object
 
-                self.canvas.create_image(0, 0, anchor=tk.NW, image=img)  # Display the image on the canvas
+                # Create a border around the image
+                border_size = 1
+                border_image = Image.new("RGB", (img.width + 2*border_size, img.height + 2*border_size), self.border_color)
+                border_image.paste(img, (border_size, border_size))
+
+                img = ImageTk.PhotoImage(border_image)  # Create an ImageTk object
+
+                self.canvas.create_image(10, 20, anchor=tk.NW, image=img)  # Display the image on the canvas
                 self.canvas.image = img  # Save a reference to the image to prevent it from being garbage collected
-                
+
                 # Calculate time left for change character
                 prediction_time_left =int(self.random_character_change_time_seconds) - (int(time.time()) - int(prediction_start_time))
                 
@@ -301,6 +307,8 @@ class Game:
                 #print(total_time_left)
                 # GUI update total time left 
                 total_time_value.set(str(total_time_left))
+                total_time_value_temp['amountused'] = self.total_game_time_seconds
+                
 
                 # Break the loop if the total game time is reached
                 if int(elapsed_time) >= int(self.total_game_time_seconds):
@@ -320,64 +328,69 @@ class Game:
                 self.back_button.config(state='normal')
             # ---------------------------------
 
-            
-
         # Create the main window
         self.random_level_window = tk.Toplevel()
-        self.random_level_window.geometry("800x600")  # Set the window size
+        self.random_level_window.geometry("1000x1000")
+        self.random_level_window.title("Level 1")
+        self.random_level_window.configure(bg=self.backround_color)
 
-        # Set the title and logo
-        self.random_level_window.title("My Window")
 
         # Create a frame to hold the left half content
         left_frame = tk.Frame(self.random_level_window)
+        left_frame.configure(bg=self.backround_color)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Create StringVar variables for the component values
+
+        # Add logo
+        logo = self.load_and_resize_image(self.logo_path, 100)
+        logo_label = tk.Label(left_frame, image=logo,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
+        logo_label.pack(anchor=tk.N, padx=10, pady=10)
+
+        # Add logo
+        self.random_level_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
+
+        #---------------------------------------------
+        # Create the StringVar variables
         max_score_value = tk.StringVar()
         character_value = tk.StringVar()
         total_score_value = tk.StringVar()
         total_time_value = tk.StringVar()
         prediction_time_value = tk.StringVar()
 
-        
-        # Add label for character
-        max_score_label = tk.Label(left_frame, text="Max score:")
-        max_score_label.pack()
-        max_score_label = tk.Label(left_frame, textvariable= max_score_value)
-        max_score_label.pack()
+        # Create a label widget
+        label = tk.Label(left_frame, text="Timer", font='Helvetica 14 bold')
+        label.place(relx=0.2, rely=0.4)
 
-        # Add label for character
-        character_label = tk.Label(left_frame, text="Character:")
-        character_label.pack()
-        character_display = tk.Label(left_frame, textvariable=character_value)
-        character_display.pack()
+        total_time_value_temp = ttk.Meter(
+            left_frame,
+            amounttotal=65,
+            amountused=0,
+            meterthickness=20,
+            bootstyle=INFO,
+            metersize=200,
+            stripethickness=6
+        )
+        total_time_value_temp.place(relx=0.2, rely=0.6)
 
-        # Add label for total score
-        total_score_label = tk.Label(left_frame, text="Total Score:")
-        total_score_label.pack()
-        total_score_display = tk.Label(left_frame, textvariable=total_score_value)
-        total_score_display.pack()
 
-        # Add label for total time left
-        total_time_label = tk.Label(left_frame, text="Total Time Left:")
-        total_time_label.pack()
-        total_time_display = tk.Label(left_frame, textvariable=total_time_value)
-        total_time_display.pack()
+        #---------------------------------------------
 
-        # Add label for prediction time left
-        prediction_time_label = tk.Label(left_frame, text="Prediction Time Left:")
-        prediction_time_label.pack()
-        prediction_time_display = tk.Label(left_frame, textvariable=prediction_time_value)
-        prediction_time_display.pack()
 
         # Create a frame to hold the right half content
         right_frame = tk.Frame(self.random_level_window)
+        right_frame.configure(bg=self.backround_color)
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # Create a canvas on the right side
-        self.canvas = tk.Canvas(right_frame, bg="white")
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        # # Create a canvas on the right side
+        self.canvas = tk.Canvas(right_frame, bg=self.backround_color, highlightthickness=5, highlightbackground=self.backround_color)
+        self.canvas.pack(ipadx=10, ipady=10, fill=tk.BOTH, expand=True)
+
+
+
+        # Add text at the bottom of the right_frame
+        text_label = tk.Label(right_frame, text="Try to predict the character", fg=self.text_color, bg=self.backround_color, font=("Verdana", 28, "bold"))
+        text_label.pack(ipadx=10, ipady=10, anchor=tk.NW, expand=True)
+
 
         # Start a thread to update the camera feed
         self.camera_thread = threading.Thread(target=update_camera)
@@ -391,6 +404,10 @@ class Game:
         self.random_level_window.mainloop()
 
 
+    def load_and_resize_image(self, path, size):
+        image = Image.open(path)
+        image = image.resize((size, size), Image.LANCZOS)
+        return ImageTk.PhotoImage(image)
 
     def learn_level(self):
 
@@ -421,9 +438,15 @@ class Game:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB
                 img = Image.fromarray(frame)  # Create an Image object from the frame
                 img = img.resize((400, 400))  # Adjust the size of the image as needed
-                img = ImageTk.PhotoImage(img)  # Create an ImageTk object
 
-                self.canvas.create_image(0, 0, anchor=tk.NW, image=img)  # Display the image on the canvas
+                # Create a border around the image
+                border_size = 1
+                border_image = Image.new("RGB", (img.width + 2*border_size, img.height + 2*border_size), self.border_color)
+                border_image.paste(img, (border_size, border_size))
+
+                img = ImageTk.PhotoImage(border_image)  # Create an ImageTk object
+
+                self.canvas.create_image(10, 20, anchor=tk.NW, image=img)  # Display the image on the canvas
                 self.canvas.image = img  # Save a reference to the image to prevent it from being garbage collected
             else:
                 self.canvas.delete("all")  # Clear the canvas when the camera feed ends
@@ -439,45 +462,58 @@ class Game:
 
         # Create the main window
         self.learn_level_window = tk.Toplevel()
-        self.learn_level_window.geometry("1000x1000")  # Set the window size
-
-        # Set the title and logo
+        self.learn_level_window.geometry("1000x1000")
         self.learn_level_window.title("How To Play")
-        self.learn_level_window.configure(bg="#161219")
+        self.learn_level_window.configure(bg=self.backround_color)
+
 
         # Create a frame to hold the left half content
         left_frame = tk.Frame(self.learn_level_window)
+        left_frame.configure(bg=self.backround_color)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        
+
     
-        # Add an logo
-        image = Image.open("./Game/game_data/Red And Yellow Illustration Rock Music (1).png")
-        image = image.resize((250, 250), Image.LANCZOS)
-        logo = ImageTk.PhotoImage(image)
-        logo_label = tk.Label(left_frame, image=logo, highlightthickness=0, borderwidth=0)
-        logo_label.image = logo
-        self.widgets["logo"].append(logo_label)
-        logo_label.pack(pady=(0, 0))  # Centered vertically with 50 pixels padding at the top
+
+        # Add logo
+        logo = self.load_and_resize_image(self.logo_path, 100)
+        logo_label = tk.Label(left_frame, image=logo,bg=self.backround_color)
+        logo_label.pack(anchor=tk.N, padx=10, pady=10)
+
+        # Add logo
+        self.learn_level_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
 
-        # Add an image on the left side
-        char_signs = Image.open("./Game/game_data/chars.png")
-        char_signs_title = ImageTk.PhotoImage(char_signs)
-        char_signs_title_label = tk.Label(left_frame, image=char_signs_title, highlightthickness=0, borderwidth=0)
-        char_signs_title_label.image = char_signs_title
-        self.widgets['char_signs'].append(char_signs_title_label)
-        char_signs_title_label.place(x=10, y=200) 
 
-   
+        # Add text 
+        text_label = tk.Label(left_frame, text="Exploring Alphabet Sign Language", fg=self.text_color, bg=self.backround_color, font=("Verdana", 15, "bold"))
+        text_label.pack(ipadx=10, ipady=10, anchor=tk.CENTER)
+
+
+
+        
+
+        # Add char_signs image
+        char_signs = self.load_and_resize_image("./Game/game_data/char_temp.png", 400)
+        char_signs_title_label = tk.Label(left_frame, image=char_signs,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
+        char_signs_title_label.pack(anchor=tk.CENTER, padx=10, pady=10)
 
         # Create a frame to hold the right half content
         right_frame = tk.Frame(self.learn_level_window)
+        right_frame.configure(bg=self.backround_color)
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # Create a canvas on the right side
-        self.canvas = tk.Canvas(right_frame, bg="#161219")
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        # # Create a canvas on the right side
+        self.canvas = tk.Canvas(right_frame, bg=self.backround_color, highlightthickness=5, highlightbackground=self.backround_color)
+        self.canvas.pack(ipadx=10, ipady=10, fill=tk.BOTH, expand=True)
 
+
+        # Add text at the bottom of the right_frame
+        text_label = tk.Label(right_frame, text="Try with your hand", fg=self.text_color, bg=self.backround_color, font=("Verdana", 28, "bold"))
+        text_label.pack(ipadx=10, ipady=10, anchor=tk.NW, expand=True)
+
+        
     
         # Start a thread to update the camera feed
         self.camera_thread = threading.Thread(target=update_camera)
@@ -500,11 +536,16 @@ class Game:
         # Create the play game menu window
         self.game_menu_window = tk.Tk()
         self.game_menu_window.geometry("800x600")
-        self.game_menu_window.title("Play Game")
+        self.game_menu_window.title("Game Menu")
+        self.game_menu_window.configure(bg=self.backround_color)
 
-        # Add the game content
-        game_label = tk.Label(self.game_menu_window, text="Game Content")
-        game_label.pack()
+        # Add logo icon
+        self.game_menu_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
+
+        # Add logo
+        logo = self.load_and_resize_image(self.logo_path, 100)
+        logo_label = tk.Label(self.game_menu_window, image=logo,bg=self.backround_color)
+        logo_label.pack(anchor=tk.NW, padx=10, pady=10)
 
         # Add a button to start the game
         
@@ -524,48 +565,34 @@ class Game:
         if self.game_menu_window != None:
             self.game_menu_window.destroy()
 
-
         # Create the main window
         self.Main_window = tk.Tk()
         self.Main_window.geometry("1000x1000")  # Set the window size
-        
+        self.Main_window.title("Sign Saga")
+        self.Main_window.configure(bg=self.backround_color)
 
-        # Set the title and logo
-        self.Main_window.title("SignSaga")
-        self.Main_window.configure(bg="#161219")
+        # Add logo icon
+        self.Main_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
+        # Add logo
+        logo = self.load_and_resize_image(self.logo_path, 100)
+        logo_label = tk.Label(self.Main_window, image=logo,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
+        logo_label.pack(anchor=tk.NW, padx=10, pady=10)
 
-        # Display logos
-        image = Image.open("./Game/game_data/Red And Yellow Illustration Rock Music (1).png")
-        image = image.resize((250, 250), Image.LANCZOS)
-        logo = ImageTk.PhotoImage(image)
-        logo_label = tk.Label(self.Main_window, image=logo, highlightthickness=0, borderwidth=0)
-        logo_label.image = logo
-        self.widgets["logo"].append(logo_label)
-        logo_label.pack(pady=(0, 0))  # Centered vertically with 50 pixels padding at the top
-
-
-
-        # # Display main logos
         # image_main = Image.open("./Game/game_data/Screenshot from 2023-05-27 04-22-49.png")
-        # logo_main = ImageTk.PhotoImage(image_main)
-        # logo_main_label = tk.Label(self.Main_window, image=logo_main, highlightthickness=0, borderwidth=0)
-        # logo_main_label.image = logo_main
-        # self.widgets["logo_main"].append(logo_main_label)
-        # logo_main_label.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
-
-
+        # image_main = image_main.resize((700, 300), Image.LANCZOS)
+        # image_main = ImageTk.PhotoImage(image_main)
+        # logo_main_label = tk.Label(self.Main_window, image=image_main,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
+        # logo_main_label.pack(anchor=tk.CENTER,fill=tk.BOTH, expand=True)
+                                
 
         # Add a button to open play_game_menu
-        self.Start_Play_button = RoundedButton(self.Main_window, text="New Game",command=self.open_game_menu)
-        self.widgets["play_button"].append(self.Start_Play_button)
+        self.Start_Play_button = tk.Button(self.Main_window, text="New Game",command=self.open_game_menu)
         self.Start_Play_button.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
 
         # Add a button to open How to Play
-        self.learn_button = RoundedButton(self.Main_window, text="How to Play",command=self.learn_level)
-        self.widgets["how_to_play_button"].append(self.learn_button)
+        self.learn_button = tk.Button(self.Main_window, text="How to Play",command=self.learn_level)
         self.learn_button.pack(pady=(50, 0))  # Centered vertically with 
-
 
         # Run the main loop
         self.Main_window.mainloop()
