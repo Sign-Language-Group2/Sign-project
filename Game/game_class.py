@@ -239,7 +239,6 @@ class Game:
             character_value.set(self.random_character)
             total_score_value.set(str(self.total_score))
             total_time_value.set(str(self.total_game_time_seconds))
-            total_time_value_temp['amountused'] = self.total_game_time_seconds
             prediction_time_value.set(str(self.random_character_change_time_seconds))
 
             # Start game
@@ -307,7 +306,6 @@ class Game:
                 #print(total_time_left)
                 # GUI update total time left 
                 total_time_value.set(str(total_time_left))
-                total_time_value_temp['amountused'] = self.total_game_time_seconds
                 
 
                 # Break the loop if the total game time is reached
@@ -357,20 +355,7 @@ class Game:
         total_time_value = tk.StringVar()
         prediction_time_value = tk.StringVar()
 
-        # Create a label widget
-        label = tk.Label(left_frame, text="Timer", font='Helvetica 14 bold')
-        label.place(relx=0.2, rely=0.4)
-
-        total_time_value_temp = ttk.Meter(
-            left_frame,
-            amounttotal=65,
-            amountused=0,
-            meterthickness=20,
-            bootstyle=INFO,
-            metersize=200,
-            stripethickness=6
-        )
-        total_time_value_temp.place(relx=0.2, rely=0.6)
+        
 
 
         #---------------------------------------------
