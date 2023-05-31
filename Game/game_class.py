@@ -15,6 +15,10 @@ from PIL import ImageTk, Image
 import threading
 
 from Game.rounded_button_class import RoundedButton
+import pygame
+
+# Initialize Pygame mixer
+pygame.mixer.init()
 
 
 
@@ -63,6 +67,8 @@ class Game:
         self.total_score = 0
 
         self.Max_score_level_1 = 0
+        self.Max_score_level_2 = 0
+        self.Max_score_level_3 = 0
 
 
         self.game_terminating = False
@@ -82,13 +88,20 @@ class Game:
         self.Start_Play_button = None
 
         self.random_1_button = None
-        self.back_button = None
+        self.random_2_button = None
+        self.random_3_button = None
 
-        self.backround_color="#212121"
+        self.back_button = None
+        self.default_sound_value = 20
+
+        self.background_color="#212121"
         self.text_color="#59e7ed"
         self.border_color='#323232'
         self.logo_path="./Game/game_data/logo-3.png"
         self.stopwatch_path ="./Game/game_data/stopwatch.png"
+        self.background_image_path ="./Game/game_data/BackgroundImage.png"
+        self.sound_path ="./Game/game_data/sound.mp3"
+        
 
     def generate_random_character(self):
         # Randomly choose a character from the labels_dict values
@@ -98,6 +111,10 @@ class Game:
         # Read a frame from the video capture object
         ret, frame = self.cap.read()
         return frame
+    
+    def update_volume(self,value):
+        volume = float(value) / 100
+        pygame.mixer.music.set_volume(volume)
 
     def update_current_prediction_character(self, prediction):
         # Get the predicted character based on the prediction
@@ -200,18 +217,41 @@ class Game:
             return 3
         else:
             return 1
+        
+    def time_left_format(self,seconds):
+        if seconds is not None:
+            seconds = int(seconds)
+            if(seconds<=0):
+                return '-'
+            d = seconds // (3600 * 24)
+            h = seconds // 3600 % 24
+            m = seconds % 3600 // 60
+            s = seconds % 3600 % 60
+            if d > 0:
+                return '{:02d}:{:02d}:{:02d}:{:02d}'.format(d, h, m, s)
+            elif h > 0:
+                return '{:02d}:{:02d}:{:02d}'.format(h, m, s)
+            elif m > 0:
+                return '{:02d}:{:02d}'.format(m, s)
+            elif s > 0:
+                return '{:02d}:{:02d}'.format(0,s)
+        return '-'
 
-    def random_level(self, total_time=20, character_change_time=5,game_level=1):
+
+    def random_level(self, total_time=15, character_change_time=5,game_level=1):
 
         self.game_terminating = False
 
         def on_closing():
             self.game_terminating = True
-            
+
+                    
 
         def update_camera():
             # disabled buttons:
             self.random_1_button.config(state='disabled')
+            self.random_2_button.config(state='disabled')
+            self.random_3_button.config(state='disabled')
             self.back_button.config(state='disabled')
 
             # camera fix
@@ -235,11 +275,28 @@ class Game:
 
             # Set initial values for the components
             if game_level==1:
-                max_score_value.set(self.Max_score_level_1)
-            character_value.set(self.random_character)
-            total_score_value.set(str(self.total_score))
-            total_time_value.set(str(self.total_game_time_seconds))
-            prediction_time_value.set(str(self.random_character_change_time_seconds))
+                max_score_value.config(text = str(self.Max_score_level_1))
+            elif game_level==2:
+                max_score_value.config(text = str(self.Max_score_level_2))
+            elif game_level==3:
+                max_score_value.config(text = str(self.Max_score_level_3))
+
+            character_value.config(text = self.random_character)
+            total_score_value.config(text = str(self.total_score))
+
+
+            # Calculate the angle based on the remaining time
+            total_angle = 360 - (360 / self.total_game_time_seconds) * (self.total_game_time_seconds - 0)
+            total_stop_watch_canvas.itemconfig(total_progress_arc, extent=-total_angle)
+            total_time_value.config(text=self.time_left_format(self.total_game_time_seconds))  # Zero-padding for single digit seconds
+
+            # Calculate the angle based on the remaining time
+            
+            prediction_angle = 360 - (360 / self.random_character_change_time_seconds) * (self.random_character_change_time_seconds - 0)
+            prediction_stop_watch_canvas.itemconfig(prediction_progress_arc, extent=-prediction_angle)
+            prediction_time_value.config(text = self.time_left_format(self.random_character_change_time_seconds)) # Zero-padding for single digit seconds
+
+
 
             # Start game
             while not self.game_terminating:
@@ -265,17 +322,19 @@ class Game:
                 # Calculate time left for change character
                 prediction_time_left =int(self.random_character_change_time_seconds) - (int(time.time()) - int(prediction_start_time))
                 
-                # GUI update time left for change character
-                #print(prediction_time_left)
-                prediction_time_value.set(str(prediction_time_left))
+                
+                prediction_angle = 360 - (360 / self.random_character_change_time_seconds) * (self.random_character_change_time_seconds - prediction_time_left)
+                prediction_stop_watch_canvas.itemconfig(prediction_progress_arc, extent=-prediction_angle)
+                prediction_time_value.config(text = self.time_left_format(prediction_time_left)) # Zero-padding for single digit seconds
+
 
                 # Check if it's time to change the random character
                 if time.time() - prediction_start_time >= self.random_character_change_time_seconds:
                     self.generate_random_character()
 
                     # GUI update character
-                    #print("####### random {} #######".format(self.random_character))
-                    character_value.set(self.random_character)
+                    # character_value.set(self.random_character)
+                    character_value.config(text = str(self.random_character))
                     
                     prediction_start_time = time.time()
 
@@ -289,8 +348,7 @@ class Game:
                     self.current_prediction_character= None
 
                     # GUI Total Score
-                    #print(self.total_score)
-                    total_score_value.set(str(self.total_score))
+                    total_score_value.config(text = str(self.total_score))
                   
                     
                     # Generate a new random character
@@ -298,14 +356,20 @@ class Game:
 
                     # GUI update character
                     # print("####### random {} #######".format(self.random_character))
-                    character_value.set(self.random_character)
+                    character_value.config(text = self.random_character)
 
 
                 elapsed_time = time.time() - game_start_time
                 total_time_left = int(self.total_game_time_seconds) - int(elapsed_time)
-                #print(total_time_left)
+
                 # GUI update total time left 
-                total_time_value.set(str(total_time_left))
+                # Calculate the angle based on the remaining time
+                total_angle = 360 - (360 / self.total_game_time_seconds) * (self.total_game_time_seconds - total_time_left)
+                total_stop_watch_canvas.itemconfig(total_progress_arc, extent=-total_angle)
+                if(total_time_left<10):
+                    total_stop_watch_canvas.itemconfig(total_progress_arc, outline="#F3A8B1")
+                    total_time_value.configure(fg="#F3A8B1")
+                total_time_value.config(text=self.time_left_format(total_time_left))  # Zero-padding for single digit seconds
                 
 
                 # Break the loop if the total game time is reached
@@ -323,57 +387,137 @@ class Game:
                 self.random_level_window.destroy()  # Close the window
                 # Enable buttons:
                 self.random_1_button.config(state='normal')
+                self.random_2_button.config(state='normal')
+                self.random_3_button.config(state='normal')
                 self.back_button.config(state='normal')
             # ---------------------------------
+
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        frame_width = 250
+        frame_height = 140
+        padx=5
+        pady=5
+        lable_size = 10
+        component_size = 30
+        timer_size = 20
+        # component_color = "#FFFFFF"
+        component_color ="#C7F2FA"
+        # component_color = self.text_color
+
 
         # Create the main window
         self.random_level_window = tk.Toplevel()
         self.random_level_window.geometry("1000x1000")
         self.random_level_window.title("Level 1")
-        self.random_level_window.configure(bg=self.backround_color)
-
-
-        # Create a frame to hold the left half content
-        left_frame = tk.Frame(self.random_level_window)
-        left_frame.configure(bg=self.backround_color)
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-
-        # Add logo
-        logo = self.load_and_resize_image(self.logo_path, 100)
-        logo_label = tk.Label(left_frame, image=logo,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
-        logo_label.pack(anchor=tk.N, padx=10, pady=10)
+        self.random_level_window.configure(bg=self.background_color)
 
         # Add logo
         self.random_level_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        #---------------------------------------------
-        # Create the StringVar variables
-        max_score_value = tk.StringVar()
-        character_value = tk.StringVar()
-        total_score_value = tk.StringVar()
-        total_time_value = tk.StringVar()
-        prediction_time_value = tk.StringVar()
+        # Create a frame to hold the left half content
+        left_frame = tk.Frame(self.random_level_window)
+        left_frame.configure(bg=self.background_color)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Add logo
+        logo = self.load_and_resize_image(self.logo_path, 100)
+        logo_label = tk.Label(left_frame, image=logo,bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color)
+        logo_label.grid(row=0, column=0, padx=15, pady=15)
+
+        #add volume
+        # Create a frame to hold the widgets
+        volume_frame = tk.Frame(left_frame, bg=self.background_color)
+        volume_frame.grid(row=0, column=1, padx=15, pady=15)
+        
+        music_level_label = tk.Label(volume_frame, text="volume", font=("Verdana", lable_size, "bold"), bg=self.background_color, fg=self.text_color)
+        music_level_label.grid(row=0, column=0,columnspan=2,padx=15, pady=15)
+        # Create and position the volume slider within the main frame
+        music_level_scale = tk.Scale(volume_frame, from_=0, to=100, orient=tk.HORIZONTAL,
+                                    bg=self.background_color, fg=self.text_color, highlightbackground=self.background_color, command=self.update_volume)
+        music_level_scale.set(self.default_sound_value)
+        music_level_scale.grid(row=1, column=1)
+        icon_image1 = Image.open("./Game/game_data/Audio.png")
+        icon_image1 = icon_image1.resize((15, 15))  # Resize the image if needed
+        icon1 = ImageTk.PhotoImage(icon_image1)
+        icon_image2 = Image.open("./Game/game_data/NoAudio.png")
+        icon_image2 = icon_image2.resize((15, 15))  # Resize the image if needed
+        icon2 = ImageTk.PhotoImage(icon_image2)
+        icon_label1 = tk.Label(volume_frame, image=icon1, bg=self.background_color)
+        icon_label1.grid(row=1, column=2, sticky="s")
+        icon_label2 = tk.Label(volume_frame, image=icon2, bg=self.background_color)
+        icon_label2.grid(row=1, column=0, sticky="s")
 
         
 
+        total_time_label = tk.Label(left_frame, text="Total Time", font=("Verdana", lable_size, "bold"), bg=self.background_color, fg=self.text_color)
+        total_time_label.grid(row=1, column=0, padx=padx, pady=pady)
+        total_time_frame = tk.Frame(left_frame, bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color, width=frame_width, height=frame_height)
+        total_time_frame.grid(row=2, column=0,padx=padx, pady=pady)
+        total_time_frame.grid_propagate(False)  # Prevents the frame from adjusting its size based on content
+        total_stop_watch_canvas = tk.Canvas(total_time_frame, width=frame_width-120, height=frame_height-10, bg=self.background_color, highlightthickness=0)
+        total_stop_watch_canvas.place(relx=0.5, rely=0.5, anchor="center")
+        total_start_angle = 90  # 90 degrees offset to start from the top
+        total_end_angle = total_start_angle - 360  # 360 degrees for a full circle
+        total_progress_arc = total_stop_watch_canvas.create_arc(10, 10, 120, 120, start=total_start_angle, extent=total_end_angle, outline=component_color, width=5, style="arc")
+        total_time_value = tk.Label(total_time_frame, text="00:00", font=("Verdana", timer_size, "bold"), bg=self.background_color, fg=component_color, wraplength=120)
+        total_time_value.place(relx=0.5, rely=0.5, anchor="center")
 
-        #---------------------------------------------
+        total_score_label = tk.Label(left_frame, text="Total Score", font=("Verdana", lable_size, "bold"), bg=self.background_color, fg=self.text_color)
+        total_score_label.grid(row=1, column=1, padx=padx, pady=pady)
+        total_score_frame = tk.Frame(left_frame, bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color, width=frame_width, height=frame_height)
+        total_score_frame.grid(row=2, column=1,padx=padx, pady=pady)
+        total_score_frame.grid_propagate(False)  # Prevents the frame from adjusting its size based on content
+        total_score_value = tk.Label(total_score_frame, text="00", font=("Verdana", component_size, "bold"), bg=self.background_color, fg=component_color, wraplength=120)
+        total_score_value.place(relx=0.5, rely=0.5, anchor="center")
+
+
+        prediction_time_label = tk.Label(left_frame, text="Prediction Time", font=("Verdana", lable_size, "bold"), bg=self.background_color, fg=self.text_color)
+        prediction_time_label.grid(row=3, column=0, padx=padx, pady=pady)
+        prediction_time_frame = tk.Frame(left_frame, bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color, width=frame_width, height=frame_height)
+        prediction_time_frame.grid(row=4, column=0,padx=padx, pady=pady)
+        prediction_time_frame.grid_propagate(False)  # Prevents the frame from adjusting its size based on content
+        prediction_stop_watch_canvas = tk.Canvas(prediction_time_frame, width=frame_width-120, height=frame_height-10, bg=self.background_color, highlightthickness=0)
+        prediction_stop_watch_canvas.place(relx=0.5, rely=0.5, anchor="center")
+        prediction_start_angle = 90  # 90 degrees offset to start from the top
+        prediction_end_angle = prediction_start_angle - 360  # 360 degrees for a full circle
+        prediction_progress_arc = prediction_stop_watch_canvas.create_arc(10, 10, 120, 120, start=prediction_start_angle, extent=prediction_end_angle, outline=component_color, width=5, style="arc")
+        prediction_time_value = tk.Label(prediction_time_frame, text="00", font=("Verdana", timer_size, "bold"), bg=self.background_color, fg=component_color, wraplength=120)
+        prediction_time_value.place(relx=0.5, rely=0.5, anchor="center")
+
+        character_label = tk.Label(left_frame, text="Character", font=("Verdana", lable_size, "bold"), bg=self.background_color, fg=self.text_color)
+        character_label.grid(row=3, column=1, padx=padx, pady=pady)
+        character_frame = tk.Frame(left_frame, bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color, width=frame_width, height=frame_height*2.3)
+        character_frame.grid(row=4, column=1, rowspan=4, padx=padx, pady=pady)
+        character_frame.grid_propagate(False)
+        character_value = tk.Label(character_frame, font=("radioland", 150, "bold"), bg=self.background_color, fg=component_color, wraplength=120)
+        character_value.place(relx=0.5, rely=0.5, anchor="center")
+
+        max_score_label = tk.Label(left_frame, text="Max Score", font=("Verdana", lable_size, "bold"), bg=self.background_color, fg=self.text_color)
+        max_score_label.grid(row=5, column=0, padx=padx, pady=pady)
+        max_score_frame = tk.Frame(left_frame, bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color, width=frame_width, height=frame_height)
+        max_score_frame.grid(row=6, column=0, padx=padx, pady=pady)
+        max_score_frame.grid_propagate(False)
+        max_score_value = tk.Label(max_score_frame, text="0", font=("Verdana", component_size, "bold"), bg=self.background_color, fg=component_color, wraplength=120)
+        max_score_value.place(relx=0.5, rely=0.5, anchor="center")
+
+
+        #+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
         # Create a frame to hold the right half content
         right_frame = tk.Frame(self.random_level_window)
-        right_frame.configure(bg=self.backround_color)
+        right_frame.configure(bg=self.background_color)
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # # Create a canvas on the right side
-        self.canvas = tk.Canvas(right_frame, bg=self.backround_color, highlightthickness=5, highlightbackground=self.backround_color)
+        self.canvas = tk.Canvas(right_frame, bg=self.background_color, highlightthickness=5, highlightbackground=self.background_color)
         self.canvas.pack(ipadx=10, ipady=10, fill=tk.BOTH, expand=True)
 
 
 
         # Add text at the bottom of the right_frame
-        text_label = tk.Label(right_frame, text="Try to predict the character", fg=self.text_color, bg=self.backround_color, font=("Verdana", 28, "bold"))
+        text_label = tk.Label(right_frame, text="Try to predict the character", fg=self.text_color, bg=self.background_color, font=("Verdana", 20, "bold"))
         text_label.pack(ipadx=10, ipady=10, anchor=tk.NW, expand=True)
 
 
@@ -449,12 +593,12 @@ class Game:
         self.learn_level_window = tk.Toplevel()
         self.learn_level_window.geometry("1000x1000")
         self.learn_level_window.title("How To Play")
-        self.learn_level_window.configure(bg=self.backround_color)
+        self.learn_level_window.configure(bg=self.background_color)
 
 
         # Create a frame to hold the left half content
         left_frame = tk.Frame(self.learn_level_window)
-        left_frame.configure(bg=self.backround_color)
+        left_frame.configure(bg=self.background_color)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         
@@ -463,7 +607,7 @@ class Game:
 
         # Add logo
         logo = self.load_and_resize_image(self.logo_path, 100)
-        logo_label = tk.Label(left_frame, image=logo,bg=self.backround_color)
+        logo_label = tk.Label(left_frame, image=logo,bg=self.background_color)
         logo_label.pack(anchor=tk.N, padx=10, pady=10)
 
         # Add logo
@@ -472,7 +616,7 @@ class Game:
 
 
         # Add text 
-        text_label = tk.Label(left_frame, text="Exploring Alphabet Sign Language", fg=self.text_color, bg=self.backround_color, font=("Verdana", 15, "bold"))
+        text_label = tk.Label(left_frame, text="Exploring Alphabet Sign Language", fg=self.text_color, bg=self.background_color, font=("Verdana", 15, "bold"))
         text_label.pack(ipadx=10, ipady=10, anchor=tk.CENTER)
 
 
@@ -481,21 +625,21 @@ class Game:
 
         # Add char_signs image
         char_signs = self.load_and_resize_image("./Game/game_data/char_temp.png", 400)
-        char_signs_title_label = tk.Label(left_frame, image=char_signs,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
+        char_signs_title_label = tk.Label(left_frame, image=char_signs,bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color)
         char_signs_title_label.pack(anchor=tk.CENTER, padx=10, pady=10)
 
         # Create a frame to hold the right half content
         right_frame = tk.Frame(self.learn_level_window)
-        right_frame.configure(bg=self.backround_color)
+        right_frame.configure(bg=self.background_color)
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # # Create a canvas on the right side
-        self.canvas = tk.Canvas(right_frame, bg=self.backround_color, highlightthickness=5, highlightbackground=self.backround_color)
+        self.canvas = tk.Canvas(right_frame, bg=self.background_color, highlightthickness=5, highlightbackground=self.background_color)
         self.canvas.pack(ipadx=10, ipady=10, fill=tk.BOTH, expand=True)
 
 
         # Add text at the bottom of the right_frame
-        text_label = tk.Label(right_frame, text="Try with your hand", fg=self.text_color, bg=self.backround_color, font=("Verdana", 28, "bold"))
+        text_label = tk.Label(right_frame, text="Try with your hand", fg=self.text_color, bg=self.background_color, font=("Verdana", 28, "bold"))
         text_label.pack(ipadx=10, ipady=10, anchor=tk.NW, expand=True)
 
         
@@ -513,6 +657,7 @@ class Game:
         self.learn_level_window.mainloop()
 
 
+
     def open_game_menu(self):
         # Clear the main menu window
         if  self.Main_window != None:
@@ -520,29 +665,53 @@ class Game:
 
         # Create the play game menu window
         self.game_menu_window = tk.Tk()
-        self.game_menu_window.geometry("800x600")
-        self.game_menu_window.title("Game Menu")
-        self.game_menu_window.configure(bg=self.backround_color)
+        width = self.game_menu_window.winfo_screenwidth()
+        height= self.game_menu_window.winfo_screenheight() 
+        self.game_menu_window.geometry("%dx%d" % (width, height))  # Set the window size
+        self.game_menu_window.resizable(False, False)
+        self.game_menu_window.title("Play Game")
+        self.game_menu_window.configure(bg=self.background_color)
+        image = Image.open(self.background_image_path)
+        image = image.resize(((width,height)), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_widget = tk.Label(self.game_menu_window, image=logo, bg=self.background_color)
+        logo_widget.pack()
+
 
         # Add logo icon
         self.game_menu_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        # Add logo
-        logo = self.load_and_resize_image(self.logo_path, 100)
-        logo_label = tk.Label(self.game_menu_window, image=logo,bg=self.backround_color)
-        logo_label.pack(anchor=tk.NW, padx=10, pady=10)
+
+        def level_1():
+            self.random_level(total_time=300, character_change_time=20,game_level=1)
+
+        def level_2():
+            self.random_level(total_time=300, character_change_time=10,game_level=2)
+
+        def level_3():
+            self.random_level(total_time=300, character_change_time=5,game_level=3)
+
+      
 
         # Add a button to start the game
-        
-        self.random_1_button = tk.Button(self.game_menu_window, text="Start Game", command=self.random_level)
-        self.random_1_button.pack()
+        self.random_1_button =tk.Button(self.game_menu_window,text="Easy",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=200,borderwidth=0,state=NORMAL ,command=level_1)
+        self.random_1_button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+        # Add a button to start the game
+        self.random_2_button =tk.Button(self.game_menu_window,text="Medium",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=200,borderwidth=0,state=NORMAL ,command=level_2)
+        self.random_2_button.place(relx=0.5, rely=0.6, anchor=tk.CENTER)
+
+        # Add a button to start the game
+        self.random_3_button =tk.Button(self.game_menu_window,text="Brutal",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=200,borderwidth=0,state=NORMAL ,command=level_3)
+        self.random_3_button.place(relx=0.5, rely=0.7, anchor=tk.CENTER)
 
         # Add a "Back" button to return to the main menu
-        self.back_button = tk.Button(self.game_menu_window, text="Back", command=self.open_main_menu)
-        self.back_button.pack()
+        self.back_button=tk.Button(self.game_menu_window,text=" Back ",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=210,borderwidth=0,state=NORMAL ,command=self.open_main_menu)
+        self.back_button.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
 
         # Run the play game menu loop
         self.game_menu_window.mainloop()
+
 
 
     def open_main_menu(self):
@@ -550,44 +719,54 @@ class Game:
         if self.game_menu_window != None:
             self.game_menu_window.destroy()
 
+        
         # Create the main window
         self.Main_window = tk.Tk()
-        self.Main_window.geometry("1000x1000")  # Set the window size
-        self.Main_window.title("Sign Saga")
-        self.Main_window.configure(bg=self.backround_color)
+        width = self.Main_window.winfo_screenwidth()
+        height= self.Main_window.winfo_screenheight() 
+        self.Main_window.geometry("%dx%d" % (width, height))  # Set the window size
+        self.Main_window.resizable(False, False)
+        self.Main_window.title("Sign-Saga")
+        self.Main_window.configure(bg=self.background_color)
+        image = Image.open(self.background_image_path)
+        image = image.resize(((width,height)), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_widget = tk.Label(self.Main_window, image=logo, bg=self.background_color)
+        logo_widget.pack()
+
 
         # Add logo icon
         self.Main_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        # Add logo
-        logo = self.load_and_resize_image(self.logo_path, 100)
-        logo_label = tk.Label(self.Main_window, image=logo,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
-        logo_label.pack(anchor=tk.NW, padx=10, pady=10)
 
-        # image_main = Image.open("./Game/game_data/Screenshot from 2023-05-27 04-22-49.png")
-        # image_main = image_main.resize((700, 300), Image.LANCZOS)
-        # image_main = ImageTk.PhotoImage(image_main)
-        # logo_main_label = tk.Label(self.Main_window, image=image_main,bg=self.backround_color, highlightthickness=1, highlightbackground=self.border_color)
-        # logo_main_label.pack(anchor=tk.CENTER,fill=tk.BOTH, expand=True)
-                                
+        # # Entry
+        # name_entry = tk.Entry(self.Main_window,textvariable ='your name',bg=self.backround_color,fg='white',width=15, borderwidth=1,font=('Comic Sans MS',15,'normal')) 
+        # name_entry.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)  
+
 
         # Add a button to open play_game_menu
-        self.Start_Play_button = tk.Button(self.Main_window, text="New Game",command=self.open_game_menu)
-        self.Start_Play_button.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
+        self.Start_Play_button=tk.Button(self.Main_window,text="Start Play",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=50,borderwidth=0,state=NORMAL ,command=self.open_game_menu)
+        self.Start_Play_button.place(relx=0.5, rely=0.8,anchor=tk.CENTER)
 
         # Add a button to open How to Play
-        self.learn_button = tk.Button(self.Main_window, text="How to Play",command=self.learn_level)
-        self.learn_button.pack(pady=(50, 0))  # Centered vertically with 
+        self.learn_button=tk.Button(self.Main_window,text="How to Play",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=50,borderwidth=0,state=NORMAL ,command=self.learn_level)
+        self.learn_button.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+
 
         # Run the main loop
         self.Main_window.mainloop()
 
     def start_game(self):
+        # # Load and play the audio track
+        pygame.mixer.music.load(self.sound_path)
+        pygame.mixer.music.play(-1)  # Set -1 to play the track in a loop indefinitely
+        self.update_volume(self.default_sound_value)
         self.open_main_menu()
 
 
 
         
+
 
 
 
