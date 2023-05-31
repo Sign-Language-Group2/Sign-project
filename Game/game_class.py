@@ -215,8 +215,8 @@ class Game:
 
         def update_camera():
             # disabled buttons:
-            self.random_1_button.configure(state='disabled')
-            self.back_button.configure(state='disabled')
+            self.random_1_button.config(state='disabled') #//////////////////////////////error
+            self.back_button.config(state='disabled')
 
             # camera fix
             ret, frame = self.cap.read()
@@ -244,7 +244,7 @@ class Game:
             total_score_value.set(str(self.total_score))
             total_time_value.set(str(self.total_game_time_seconds))
             prediction_time_value.set(str(self.random_character_change_time_seconds))
-            total_time_value_temp['amountused'] = self.total_game_time_seconds   #///////////timer
+            # total_time_value_temp['amountused'] = self.total_game_time_seconds   #///////////timer
             
 
             # Start game
@@ -269,7 +269,7 @@ class Game:
                 #print(prediction_time_left)
                 prediction_time_value.set(str(prediction_time_left))
 
-                total_time_value_temp['amountused'] = self.total_game_time_seconds   #///////////timer
+                # total_time_value_temp['amountused'] = self.total_game_time_seconds   #///////////timer
 
                 # Check if it's time to change the random character
                 if time.time() - prediction_start_time >= self.random_character_change_time_seconds:
@@ -323,32 +323,32 @@ class Game:
                 self.canvas.delete("all")  # Clear the canvas when the camera feed ends
                 self.random_level_window.destroy()  # Close the window
                 # Enable buttons:
-                self.random_1_button.configure(state='normal')
-                self.back_button.configure(state='normal')
+                self.random_1_button.config(state='normal')  #//////////////////////////////error
+                self.back_button.config(state='normal')
             # ---------------------------------
 
             
         # Create the main window
         self.random_level_window = tk.Toplevel()
         # self.random_level_window = ctk.CTk() 
-        self.random_level_window.geometry("1520x1200")  # Set the window size
+        self.random_level_window.geometry("1300x900")  # Set the window size
 
         # Set the title and logo
         self.random_level_window.title("My Window")
 
         # Create a frame to hold the left half content
-        left_frame = ctk.CTkFrame(self.random_level_window)
-        left_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
-        left_frame.configure(fg_color=self.backround_color)
+        left_frame = tk.Frame(self.random_level_window)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        left_frame.config(bg=self.backround_color)
 
    
         # Create StringVar variables for the component values
-        max_score_value = ctk.StringVar()
+        max_score_value = tk.StringVar()
         # max_score_value = tk.StringVar(value="CTkLabel")
-        character_value = ctk.StringVar()
-        total_score_value = ctk.StringVar()
-        total_time_value = ctk.StringVar()
-        prediction_time_value = ctk.StringVar()
+        character_value = tk.StringVar()
+        total_score_value = tk.StringVar()
+        total_time_value = tk.StringVar()
+        prediction_time_value = tk.StringVar()
         # prediction_time_value = ttk.DoubleVar(value=0)
         
         # meter= ttk.Meter(bootstyle="success", subtextstyle="warning")
@@ -359,16 +359,16 @@ class Game:
         # meter= ttk.Meter(master=left_frame,amounttotal=59,amountused=0,meterthickness=20,bootstyle=INFO,metersize=200,stripethickness=6 )
         # meter.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
 
-        total_time_value_temp = ttk.Meter(
-            master=left_frame,
-            amounttotal=5,
-            amountused=0,
-            meterthickness=20,
-            bootstyle=INFO,
-            metersize=200,
-            stripethickness=6
-        )
-        total_time_value_temp.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
+        # total_time_value_temp = ttk.Meter(
+        #     master=left_frame,
+        #     amounttotal=5,
+        #     amountused=0,
+        #     meterthickness=20,
+        #     bootstyle=INFO,
+        #     metersize=200,
+        #     stripethickness=6
+        # )
+        # total_time_value_temp.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
         
         # meter.pack()
         # prediction_time_value.set(meter.amountusedvar)
@@ -377,58 +377,65 @@ class Game:
         # prediction_time_value = ctk.CTkProgressBar(master=left_frame)
 
         # Add label for character
-        image_path = self.logo_path# logo img
-        my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(250, 250))
-        image_label = ctk.CTkLabel(left_frame, image=my_image, text="") 
-        image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
+        
+        # image_path = self.logo_path
+        # my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(200, 200))
+        # image_label = ctk.CTkLabel(left_frame, image=my_image, text="") 
+        # image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
 
-        max_score_label = ctk.CTkLabel(left_frame, text="Max score:",font=('Arial', 20))
-        max_score_label.place(relx=0.5, rely=0.4, anchor=ctk . CENTER)
+        image = Image.open(self.logo_path)
+        image = image.resize((200, 200), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_widget = tk.Label(left_frame, image=logo, bg=self.backround_color,)
+        logo_widget.place(relx=0.5, rely=0.2, anchor=tk . CENTER)
+
+        max_score_label = tk.Label(left_frame, text="Max score:",bg=self.backround_color,fg='white',font=('Arial', 20))
+        max_score_label.place(relx=0.5, rely=0.4, anchor=tk . CENTER)
         # max_score_label.pack()
-        max_score_label = ctk.CTkLabel(left_frame, textvariable= max_score_value,font=('Arial', 20))
-        max_score_label.place(relx=0.5, rely=0.45, anchor=ctk . CENTER)
+        max_score_label = tk.Label(left_frame, textvariable= max_score_value,bg=self.backround_color,fg='white',font=('Arial', 20))
+        max_score_label.place(relx=0.5, rely=0.45, anchor=tk . CENTER)
         # max_score_label.pack()
 
         # Add label for character
-        character_label = ctk.CTkLabel(left_frame, text="Character:",font=('Arial', 20))
-        character_label.place(relx=0.5, rely=0.5, anchor=ctk . CENTER)
+        character_label = tk.Label(left_frame, text="Character:",bg=self.backround_color,fg='white',font=('Arial', 20))
+        character_label.place(relx=0.5, rely=0.5, anchor=tk . CENTER)
         # character_label.pack()
-        character_display = ctk.CTkLabel(left_frame, textvariable=character_value,font=("Comic Sans MS", 50, "bold"))
-        character_display.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
+        character_display = tk.Label(left_frame, textvariable=character_value,bg=self.backround_color,fg='white',font=("Comic Sans MS", 50, "bold"))
+        character_display.place(relx=0.5, rely=0.6, anchor=tk . CENTER)
         # character_display.pack()
 
         # Add label for total score
-        total_score_label = ctk.CTkLabel(left_frame, text="Total Score:",font=('Arial', 20))
-        total_score_label.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
+        total_score_label = tk.Label(left_frame, text="Total Score:",bg=self.backround_color,fg='white',font=('Arial', 20))
+        total_score_label.place(relx=0.5, rely=0.7, anchor=tk . CENTER)
         # total_score_label.pack()
-        total_score_display = ctk.CTkLabel(left_frame, textvariable=total_score_value,font=('Arial', 20))
-        total_score_display.place(relx=0.5, rely=0.75, anchor=ctk . CENTER)
+        total_score_display = tk.Label(left_frame, textvariable=total_score_value,bg=self.backround_color,fg='white',font=('Arial', 20))
+        total_score_display.place(relx=0.5, rely=0.75, anchor=tk . CENTER)
         # total_score_display.pack()
 
         # Add label for total time left
-        total_time_label = ctk.CTkLabel(left_frame, text="Total Time Left:",font=('Arial', 20))
-        total_time_label.place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
+        total_time_label = tk.Label(left_frame, text="Total Time Left:",bg=self.backround_color,fg='white',font=('Arial', 20))
+        total_time_label.place(relx=0.5, rely=0.8, anchor=tk . CENTER)
         # total_time_label.pack()
-        total_time_display = ctk.CTkLabel(left_frame, textvariable=total_time_value,font=('Arial', 20))
-        total_time_display.place(relx=0.5, rely=0.85, anchor=ctk . CENTER)
+        total_time_display = tk.Label(left_frame, textvariable=total_time_value,bg=self.backround_color,fg='white',font=('Arial', 20))
+        total_time_display.place(relx=0.5, rely=0.85, anchor=tk . CENTER)
         # total_time_display.pack()
 
         # Add label for prediction time left
-        prediction_time_label = ctk.CTkLabel(left_frame, text="Prediction Time Left:",font=('Arial', 20))
-        prediction_time_label.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
+        prediction_time_label = tk.Label(left_frame, text="Prediction Time Left:",bg=self.backround_color,fg='white',font=('Arial', 20))
+        prediction_time_label.place(relx=0.5, rely=0.9, anchor=tk . CENTER)
         # prediction_time_label.pack()
 
-        prediction_time_display = ctk.CTkLabel(left_frame, textvariable=prediction_time_value,font=('Arial', 20))
-        prediction_time_display.place(relx=0.5, rely=0.95, anchor=ctk . CENTER)
+        prediction_time_display = tk.Label(left_frame, textvariable=prediction_time_value,bg=self.backround_color,fg='white',font=('Arial', 20))
+        prediction_time_display.place(relx=0.5, rely=0.95, anchor=tk . CENTER)
         # prediction_time_display.pack()
-
+       
         # Create a frame to hold the right half content
-        right_frame = ctk.CTkFrame(self.random_level_window)
-        right_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True)
+        right_frame = tk.Frame(self.random_level_window)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # Create a canvas on the right side
-        self.canvas = ctk.CTkCanvas(right_frame,)
-        self.canvas.pack(fill=ctk.BOTH, expand=True)
+        self.canvas = tk.Canvas(right_frame)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
         # Start a thread to update the camera feed
         self.camera_thread = threading.Thread(target=update_camera)
@@ -442,7 +449,6 @@ class Game:
         self.random_level_window.mainloop()
 
 
-
     def learn_level(self):
 
         self.game_terminating = False
@@ -452,8 +458,8 @@ class Game:
             
         def update_camera():
             # disabled buttons:
-            # self.learn_button.configure(state='disabled')
-            # self.Start_Play_button.configure(state='disabled') #//////////////////////////////error
+            self.learn_button.config(state='disabled')
+            self.Start_Play_button.config(state='disabled') #//////////////////////////////error
 
             # fix camera
             ret, frame = self.cap.read()
@@ -481,8 +487,8 @@ class Game:
                 self.cap.release()  # Release the camera
                 self.learn_level_window.destroy()  # Close the window
                 # Enable buttons:
-                self.learn_button.configure(state='normal')
-                self.Start_Play_button.configure(state='normal')
+                self.learn_button.config(state='normal')  #//////////////////////////
+                self.Start_Play_button.config(state='normal')
 
              # --------------------------------
 
@@ -491,9 +497,9 @@ class Game:
         # Create the main window
 
         self.learn_level_window = tk.Toplevel()
-        ctk.set_appearance_mode("System")
-        ctk.set_default_color_theme("blue")
-        self.learn_level_window.geometry("1600x1300")  # Set the window size
+        # ctk.set_appearance_mode("System")
+        # ctk.set_default_color_theme("blue")
+        self.learn_level_window.geometry("1300x900")  # Set the window size
         # self.learn_level_window.configure(fg_color="#161219")
 
         # Set the title and logo
@@ -501,15 +507,26 @@ class Game:
         # self.learn_level_window.configure(bg="#161219")
 
         # Create a frame to hold the left half content
-        left_frame = ctk.CTkFrame(self.learn_level_window,fg_color=self.backround_color)
-        left_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
+        left_frame = tk.Frame(self.learn_level_window,bg=self.backround_color)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         # left_frame.configure(fg_color="#161219")
-        
 
-        image_path = self.logo_path
-        my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(200, 200))
-        image_label = ctk.CTkLabel(left_frame, image=my_image, text="") 
-        image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
+        image = Image.open(self.logo_path)          
+        image = image.resize((200, 200), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_widget = tk.Label(left_frame, image=logo, bg=self.backround_color,)
+        logo_widget.place(relx=0.5, rely=0.2, anchor=tk . CENTER)
+
+        # image_path = self.logo_path     
+        # my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(200, 200))
+        # image_label = ctk.CTkLabel(left_frame, image=my_image, text="") 
+        # image_label.place(relx=0.5, rely=0.1)
+
+        # image_2 = Image.open('Game\game_data\hand_3.png')
+        # image_2 = image.resize((480, 635), Image.LANCZOS)
+        # hands = ImageTk.PhotoImage(image_2)
+        # hands_widget = tk.Label(left_frame, image=hands, bg=self.backround_color)
+        # hands_widget.place(relx=0.5, rely=0.3)
 
         image_path = 'Game\game_data\hand_3.png'     
         my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(480, 635))
@@ -517,14 +534,14 @@ class Game:
         image_label.place(relx=0.0, rely=0.3)
 
         # Create a frame to hold the right half content/////////////////////
-        right_frame = ctk.CTkFrame(self.learn_level_window)
-        right_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True)
+        right_frame = tk.Frame(self.learn_level_window)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         # right_frame.grid(row=0, column=2,sticky="nsew")
         # right_frame.configure(fg_color="#161219")
 
         # Create a canvas on the right side
-        self.canvas = ctk.CTkCanvas(right_frame, )
-        self.canvas.pack(fill=ctk.BOTH, expand=True)
+        self.canvas = tk.Canvas(right_frame, )
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
         # Start a thread to update the camera feed
         self.camera_thread = threading.Thread(target=update_camera)
@@ -545,34 +562,46 @@ class Game:
             self.Main_window.destroy()
 
         # Create the play game menu window
-        self.game_menu_window = ctk.CTk()
-        self.game_menu_window.geometry("800x900")
+        self.game_menu_window = tk.Tk()
+        self.game_menu_window.geometry("600x800")
         self.game_menu_window.title("Play Game")
-        self.game_menu_window.configure(fg_color=self.backround_color)
-
+        self.game_menu_window.configure(bg=self.backround_color)
 
         # Add the game content
         # game_label = ctk.CTkLabel(self.game_menu_window, text="Game Content")
         # game_label.place(relx=0.5, rely=0.1, anchor=ctk . CENTER)
         # game_label.pack()
+        
+        image = Image.open('Game\game_data\w.png')
+        image = image.resize((600, 800), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_widget = tk.Label(self.game_menu_window, image=logo, bg=self.backround_color,)
+        # logo_widget.place(relx=0.5, rely=0.3, anchor=tk . CENTER)
+        logo_widget.pack()
 
-        image_path = self.logo_path
-        my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(300, 300))
-        image_label = ctk.CTkLabel(self.game_menu_window, image=my_image, text="") 
-        image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
+        # image_path = self.logo_path
+        # my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(300, 300))
+        # image_label = ctk.CTkLabel(self.game_menu_window, image=my_image, text="") 
+        # image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
 
         # Add a button to start the game
         
         # self.random_1_button = tk.Button(self.game_menu_window, text="Start Game", command=self.random_level)
         # self.random_1_button.pack()
-        self.random_1_button  = ctk.CTkButton(self.game_menu_window, text="Start Play",fg_color='#526D82' , width=500, command=self.random_level)
+
+        # self.random_1_button  = ctk.CTkButton(self.game_menu_window, text="Start Play",fg_color='#526D82' , width=500, command=self.random_level)
+        # self.random_1_button .place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
+        self.random_1_button =tk.Button(self.game_menu_window,text="level one",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=200,borderwidth=0,state=NORMAL ,command=self.random_level)
         self.random_1_button .place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
 
         # Add a "Back" button to return to the main menu
         # self.back_button = tk.Button(self.game_menu_window, text="Back", command=self.open_main_menu)
         # self.back_button.pack()
-        self.back_button  = ctk.CTkButton(self.game_menu_window, text="Back", width=500,fg_color='#526D82' , command=self.open_main_menu)
-        self.back_button .place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
+
+        # self.back_button  = ctk.CTkButton(self.game_menu_window, text="Back", width=500,fg_color='#526D82' , command=self.open_main_menu)
+        # self.back_button .place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
+        self.back_button=tk.Button(self.game_menu_window,text=" Back ",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=210,borderwidth=0,state=NORMAL ,command=self.open_main_menu)
+        self.back_button.place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
 
         # Run the play game menu loop
         self.game_menu_window.mainloop()
@@ -583,50 +612,105 @@ class Game:
         if self.game_menu_window != None:
             self.game_menu_window.destroy()
 
-
-        # Create the main window
-        self.Main_window = ctk.CTk()
-        self.Main_window.geometry("800x900")  # Set the window size
-        # self.Main_window.configure(fg_color="#161219")
         
+        # Create the main window
+        self.Main_window = tk.Tk()
+        width = self.Main_window.winfo_screenwidth()
+        height= self.Main_window.winfo_screenheight() 
+        self.Main_window.geometry("%dx%d" % (width, height))  # Set the window size
+        self.Main_window.resizable(False, False)
+        # self.Main_window.configure(fg_color="#161219")
+
 
         # Set the title and logo
         self.Main_window.title("Sign-Saga")
         # self.Main_window.configure(bg="#161219")
-        ctk.set_appearance_mode("System")
-        ctk.set_default_color_theme("blue")
-        self.Main_window.configure(fg_color=self.backround_color)
+        # ctk.set_appearance_mode("System")
+        # ctk.set_default_color_theme("blue")
+        self.Main_window.configure(bg=self.backround_color)
 
 
         # Display logos
-        image_path = self.logo_path
-        my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(300, 300))
-        image_label = ctk.CTkLabel(self.Main_window, image=my_image, text="") 
-        image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
+        # image_path = self.logo_path
+        # my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(300, 300))
+        # image_label = ctk.CTkLabel(self.Main_window, image=my_image, text="") 
+        # image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
 
+        # logo_img = ImageTk.PhotoImage(file=self.logo_path)
+        # logo_widget = tk.Label(self.Main_window, image=logo_img, bg=self.backround_color,)
+        # logo_widget.place(relx=0.5, rely=0.2, anchor=tk . CENTER)
+        # logo_widget.image = logo_img
+        # logo_widget.pack(pady=(50, 0))
+        
+         #img1
+        # image = Image.open('Game\game_data\logo-3.png')
+        # image = image.resize((400, 600), Image.LANCZOS)
+        # logo = ImageTk.PhotoImage(image)
+        # logo_widget = tk.Label(self.Main_window, image=logo, bg=self.backround_color,)
+        # # logo_widget.place(relx=0.5, rely=0.3, anchor=tk . CENTER)
+        # logo_widget.pack()
+        #img1
+        image = Image.open('Game\game_data\desktop-wallpaper-sunset-dark-theme-minimal-nature-dark-minimalist-theme-sun.png')
+        image = image.resize(((width,height)), Image.LANCZOS)
+        logo = ImageTk.PhotoImage(image)
+        logo_widget = tk.Label(self.Main_window, image=logo, bg=self.backround_color,)
+        # logo_widget.place(relx=0.5, rely=0.3, anchor=tk . CENTER)
+        logo_widget.pack()
+       #img1
+        # image = Image.open('Game\game_data\w.png')
+        # image = image.resize((400, 600), Image.LANCZOS)
+        # logo = ImageTk.PhotoImage(image)
+        # logo_widget = tk.Label(self.Main_window, image=logo, bg=self.backround_color,)
+        # # logo_widget.place(relx=0.5, rely=0.3, anchor=tk . CENTER)
+        # logo_widget.pack()
+        # #img1
+        # image = Image.open('Game\game_data\w.png')
+        # image = image.resize((400, 600), Image.LANCZOS)
+        # logo = ImageTk.PhotoImage(image)
+        # logo_widget = tk.Label(self.Main_window, image=logo, bg=self.backround_color,)
+        # # logo_widget.place(relx=0.5, rely=0.3, anchor=tk . CENTER)
+        # logo_widget.pack()
 
         # # Display main logos
 
         # nameLabel = ctk.CTkLabel(self.Main_window,text="Name",width=500) 
         # nameLabel.place(relx=0.5, rely=0.4, anchor=ctk . CENTER)
 
-        nameEntry = ctk.CTkEntry(self.Main_window,placeholder_text="your name", width=500) 
-        nameEntry.place(relx=0.5, rely=0.5, anchor=ctk . CENTER)   
+        # nameEntry = ctk.CTkEntry(self.Main_window,placeholder_text="your name", width=500) 
+        # nameEntry.place(relx=0.5, rely=0.5, anchor=ctk . CENTER)  
+
+        # name_label = tk.Label(self.Main_window, text = 'Username', font=('calibre',10, 'bold'))
+        # name_label.place(relx=0.5, rely=0.4, anchor=ctk . CENTER)
+
+        name_entry = tk.Entry(self.Main_window,textvariable ='your name',bg=self.backround_color,fg='white',width=15, borderwidth=1,font=('Comic Sans MS',15,'normal')) 
+        name_entry.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)  
+
 
         # Add a button to open play_game_menu
         # self.Start_Play_button = RoundedButton(self.Main_window, text="New Game",command=self.open_game_menu)
         # self.widgets["play_button"].append(self.Start_Play_button)
+        # self.Start_Play_button.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
         # self.Start_Play_button.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
 
-        button = ctk.CTkButton(self.Main_window, text="Start Play", width=500,fg_color='#526D82' ,command=self.open_game_menu)
-        button.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
+
+        # button = ctk.CTkButton(self.Main_window, text="Start Play", width=500,fg_color='#526D82' ,command=self.open_game_menu)
+        # button.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
+
+        self.Start_Play_button=tk.Button(self.Main_window,text="Start Play",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=50,borderwidth=0,state=NORMAL ,command=self.open_game_menu)
+        self.Start_Play_button.place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
+
 
         # Add a button to open How to Play
         # self.learn_button = RoundedButton(self.Main_window, text="How to Play",command=self.learn_level)
         # self.widgets["how_to_play_button"].append(self.learn_button)
         # self.learn_button.pack(pady=(50, 0))  # Centered vertically with 
-        button = ctk.CTkButton(self.Main_window, text="How to Play", width=500,fg_color='#526D82' , command=self.learn_level)
-        button.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
+        # self.learn_button.place(relx=0.5, rely=0.7, anchor=tk . CENTER)
+
+        # button = ctk.CTkButton(self.Main_window, text="How to Play", width=500,fg_color='#526D82' , command=self.learn_level)
+        # button.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
+
+        self.learn_button=tk.Button(self.Main_window,text="How to Play",bg="#28393a",fg="white",cursor="hand2",activebackground="#146C94",background="#526D82",font=("Comic Sans MS", 10),padx=50,borderwidth=0,state=NORMAL ,command=self.learn_level)
+        self.learn_button.place(relx=0.5, rely=0.9, anchor=tk . CENTER)
 
 
         # Run the main loop
