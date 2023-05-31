@@ -1,15 +1,17 @@
 import sys
-import pickle
-import random
-import numpy as np
-import time
-import customtkinter as ctk
-import tkinter as tk
-import cv2
 
-import threading
+
 try:
-    
+    import pickle
+    import random
+    import time
+    import customtkinter as ctk
+    import tkinter as tk
+    import cv2
+    from ttkbootstrap.constants import *
+    import ttkbootstrap as tb
+    import threading
+    import numpy as np
     from PIL import ImageTk, Image
     import cv2
     import mediapipe as mp
@@ -19,8 +21,16 @@ except :
     from PIL import ImageTk, Image
     import cv2
     import mediapipe as mp  
-
-    
+    import numpy as np
+    import pickle
+    import random
+    import time
+    import customtkinter as ctk
+    import tkinter as tk
+    import cv2
+    from ttkbootstrap.constants import *
+    import ttkbootstrap as tb
+    import threading
 
 from Game.rounded_button_class import RoundedButton
 
@@ -545,16 +555,19 @@ class Game:
             self.game_menu_window.destroy()
 
 
-        # Create the main window
-        self.Main_window = tk.Tk()
-        self.Main_window.geometry("1000x1000")  # Set the window size
-        
+        ''' Create the main window '''
+        # self.Main_window = tk.Tk()
+        # self.Main_window.geometry("1000x1000")  # Set the window size
+
+        self.Main_window=tb.Window(themename='vapor')  # ''' new '''
+        self.Main_window.geometry("1000x1000")         # ''' new '''
 
         # Set the title and logo
         self.Main_window.title("SignSaga")
         self.Main_window.iconbitmap(r'Game\game_data\Red And Yellow Illustration Rock Music (1).ico')
         self.Main_window.configure(bg="#161219")
 
+        
 
         # Display logos
         image = Image.open("./Game/game_data/Red And Yellow Illustration Rock Music (1).png")
@@ -578,16 +591,28 @@ class Game:
 
 
         # Add a button to open play_game_menu
-        self.Start_Play_button = RoundedButton(self.Main_window, text="New Game",command=self.open_game_menu)
-        self.widgets["play_button"].append(self.Start_Play_button)
-        self.Start_Play_button.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
+        # self.Start_Play_button = RoundedButton(self.Main_window, text="New Game",command=self.open_game_menu)
+        # self.widgets["play_button"].append(self.Start_Play_button)
+        # self.Start_Play_button.pack(pady=(50, 0))  # Centered vertically with 50 pixels padding at the top
 
         # Add a button to open How to Play
-        self.learn_button = RoundedButton(self.Main_window, text="How to Play",command=self.learn_level)
-        self.widgets["how_to_play_button"].append(self.learn_button)
-        self.learn_button.pack(pady=(50, 0))  # Centered vertically with 
+        # self.learn_button = RoundedButton(self.Main_window, text="How to Play",command=self.learn_level)
+        # self.widgets["how_to_play_button"].append(self.learn_button)
+        # self.learn_button.pack(pady=(50, 0))  # Centered vertically with 
 
 
+        self.main_frame=tb.Frame(self.Main_window )  # main_frame ''' new '''
+        self.main_frame.pack(padx=0,pady=0,fill=BOTH, expand=True) # main_frame ''' new '''
+
+        self.btn_style=tb.Style() #''' new '''
+        self.btn_style.configure('primary.Outline.TButton',font=("Comic Sans MS",20),compound=tk.CENTER , relief=tk.FLAT  ) #''' new '''
+
+        self.Start_Play_button=tb.Button(self.main_frame,text='start game',style='primary.Outline.TButton', command=self.open_game_menu)  #''' new '''
+        self.Start_Play_button.pack(pady=(50, 0))  #''' new '''
+
+        self.learn_button=tb.Button(self.main_frame,text='how to play' , style='primary.Outline.TButton',command=self.learn_level) #''' new '''
+        self.learn_button.pack(pady=(50, 0))  #''' new '''
+        
         # Run the main loop
         self.Main_window.mainloop()
 
