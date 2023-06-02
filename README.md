@@ -58,5 +58,5 @@ pip install -r requirements.txt
 * Start the game by running the following command:
 
 ```
-python .\Game\play.py
+python .\play.py
 ```
