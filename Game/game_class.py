@@ -4,22 +4,16 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import time
-
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
-
 from PIL import ImageTk, Image
 import threading
-
 from Game.user_CSVManager_class import UserCSVManager
 import pygame
 
 # Initialize Pygame mixer
 pygame.mixer.init()
-
-
-
 
 
 class Game:
@@ -68,7 +62,6 @@ class Game:
         self.Max_score_level_2 = 0
         self.Max_score_level_3 = 0
 
-
         self.game_terminating = False
 
         self.image_tk = None 
@@ -106,8 +99,8 @@ class Game:
 
         self.user_name = None
         self.csv_manager = None
+        self.user_dropdown = None
         
-
     def generate_random_character(self):
         # Randomly choose a character from the labels_dict values
         self.random_character = random.choice(list(self.labels_dict.values()))
@@ -251,7 +244,6 @@ class Game:
             self.game_terminating = True
 
                     
-
         def update_camera():
             # disabled buttons:
             self.random_1_button.configure(state='disabled')
@@ -295,12 +287,10 @@ class Game:
             total_stop_watch_canvas.itemconfig(total_progress_arc, extent=-total_angle)
             total_time_value.config(text=self.time_left_format(self.total_game_time_seconds))  # Zero-padding for single digit seconds
 
-            # Calculate the angle based on the remaining time
-            
+            # Calculate the angle based on the remaining time 
             prediction_angle = 360 - (360 / self.random_character_change_time_seconds) * (self.random_character_change_time_seconds - 0)
             prediction_stop_watch_canvas.itemconfig(prediction_progress_arc, extent=-prediction_angle)
             prediction_time_value.config(text = self.time_left_format(self.random_character_change_time_seconds)) # Zero-padding for single digit seconds
-
 
 
             # Start game
@@ -312,7 +302,7 @@ class Game:
 
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB                
                 img = Image.fromarray(frame)  # Create an Image object from the frame
-                img = img.resize((400, 400))  # Adjust the size of the image as needed
+                img = img.resize((1000, 700))  # Adjust the size of the image as needed
 
                 # Create a border around the image
                 border_size = 1
@@ -399,7 +389,6 @@ class Game:
 
                 self.total_score = 0
 
-
                 self.cap.release()  # Release the camera
                 self.canvas.delete("all")  # Clear the canvas when the camera feed ends
                 self.random_level_window.destroy()  # Close the window
@@ -423,10 +412,9 @@ class Game:
         component_color ="#C7F2FA"
         # component_color = self.text_color
 
-
         # Create the main window
         self.random_level_window = tk.Toplevel()
-        self.random_level_window.geometry("1000x1000")
+        self.random_level_window.geometry("1300x800") 
         self.random_level_window.title("Level 1")
         self.random_level_window.configure(bg=self.background_color)
 
@@ -495,9 +483,12 @@ class Game:
         max_score_value = tk.Label(max_score_frame, text="0", font=("Verdana", component_size, "bold"), bg=self.background_color, fg=component_color, wraplength=120)
         max_score_value.place(relx=0.5, rely=0.5, anchor="center")
 
+         # Add text at the bottom of the right_frame
+        # text_label = tk.Label(left_frame, text="Try to predict the character", fg=self.text_color, bg=self.background_color, font=("Verdana", 20, "bold"))
+        # # text_label.pack(ipadx=10, ipady=20, anchor=tk.NW, expand=True)
+        # text_label.place(relx=0.3, rely=0.9, anchor="center")
 
         #+++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
         # Create a frame to hold the right half content
         right_frame = tk.Frame(self.random_level_window)
@@ -506,11 +497,13 @@ class Game:
 
         # # Create a canvas on the right side
         self.canvas = tk.Canvas(right_frame, bg=self.background_color, highlightthickness=5, highlightbackground=self.background_color)
-        self.canvas.pack(ipadx=10, ipady=10, fill=tk.BOTH, expand=True)
+        # self.canvas.place(relx=0.2, rely=0.2,)
+        self.canvas.pack(ipadx=10, ipady=20, fill=tk.BOTH, expand=True)
 
         # Add text at the bottom of the right_frame
         text_label = tk.Label(right_frame, text="Try to predict the character", fg=self.text_color, bg=self.background_color, font=("Verdana", 20, "bold"))
-        text_label.pack(ipadx=10, ipady=10, anchor=tk.NW, expand=True)
+        # text_label.pack(ipadx=10, ipady=20, anchor=tk.NW, expand=True)
+        text_label.place(relx=0.3, rely=0.8, anchor="center")
 
 
         #add volume
@@ -518,20 +511,18 @@ class Game:
         volume_frame = tk.Frame(right_frame, bg=self.background_color)
         volume_frame.pack(anchor=tk.SE)
         
-        # music_level_label = tk.Label(volume_frame, text="volume", font=("Verdana", 10, "bold"), bg=self.background_color, fg=self.text_color)
-        # music_level_label.grid(row=0, column=0,columnspan=2,padx=15, pady=15)
-        # Create and position the volume slider within the main frame
-        # music_level_scale = tk.Scale(volume_frame, from_=0, to=100, orient=tk.HORIZONTAL,
-        #                             bg=self.background_color, fg=self.text_color, highlightbackground=self.background_color, command=self.update_volume)
         music_level_scale = ctk.CTkSlider(volume_frame, from_=0, to=100, command=self.update_volume)
         music_level_scale.set(self.default_sound_value)
         music_level_scale.grid(row=1, column=1)
+
         icon_image1 = Image.open("./Game/game_data/Audio.png")
         icon_image1 = icon_image1.resize((15, 15))  # Resize the image if needed
         icon1 = ImageTk.PhotoImage(icon_image1)
         icon_image2 = Image.open("./Game/game_data/NoAudio.png")
+
         icon_image2 = icon_image2.resize((15, 15))  # Resize the image if needed
         icon2 = ImageTk.PhotoImage(icon_image2)
+
         icon_label1 = tk.Label(volume_frame, image=icon1, bg=self.background_color)
         icon_label1.grid(row=1, column=2, sticky="s")
         icon_label2 = tk.Label(volume_frame, image=icon2, bg=self.background_color)
@@ -584,7 +575,7 @@ class Game:
 
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB
                 img = Image.fromarray(frame)  # Create an Image object from the frame
-                img = img.resize((600, 600))  # Adjust the size of the image as needed
+                img = img.resize((1000,700))  # Adjust the size of the image as needed
 
                 # Create a border around the image
                 border_size = 1
@@ -605,47 +596,32 @@ class Game:
                 self.open_score_button.configure(state='normal')
 
              # --------------------------------
-
-        
-
+     
         # Create the main window
         self.learn_level_window = tk.Toplevel()
-        self.learn_level_window.geometry("1000x1000")
+        self.learn_level_window.geometry("1300x800")
         self.learn_level_window.title("How To Play")
         self.learn_level_window.configure(bg=self.background_color)
-
 
         # Create a frame to hold the left half content
         left_frame = tk.Frame(self.learn_level_window)
         left_frame.configure(bg=self.background_color)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        
-
-    
-
         # Add logo
-        logo = self.load_and_resize_image(self.logo_path, 100)
-        logo_label = tk.Label(left_frame, image=logo,bg=self.background_color)
-        logo_label.pack(anchor=tk.N, padx=10, pady=10)
+        image_path = self.logo_path    
+        my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(250, 250))
+        image_label = ctk.CTkLabel(left_frame, image=my_image, text="") 
+        image_label.place(relx=0.2, rely=0.05)
 
         # Add logo
         self.learn_level_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-
-
-        # Add text 
-        text_label = tk.Label(left_frame, text="Exploring Alphabet Sign Language", fg=self.text_color, bg=self.background_color, font=("Verdana", 15, "bold"))
-        text_label.pack(ipadx=10, ipady=10, anchor=tk.CENTER)
-
-
-
-        
-
         # Add char_signs image
-        char_signs = self.load_and_resize_image("./Game/game_data/char_temp.png", 400)
-        char_signs_title_label = tk.Label(left_frame, image=char_signs,bg=self.background_color, highlightthickness=1, highlightbackground=self.border_color)
-        char_signs_title_label.pack(anchor=tk.CENTER, padx=10, pady=10)
+        char_signs = "./Game/game_data/char_temp.png"    
+        my_image = ctk.CTkImage(dark_image=Image.open(char_signs),size=(480, 635))
+        char_signs_title_label = ctk.CTkLabel(left_frame, image=my_image, text="") 
+        char_signs_title_label.place(relx=0.0, rely=0.3)
 
         # Create a frame to hold the right half content
         right_frame = tk.Frame(self.learn_level_window)
@@ -654,23 +630,17 @@ class Game:
 
         # # Create a canvas on the right side
         self.canvas = tk.Canvas(right_frame, bg=self.background_color, highlightthickness=5, highlightbackground=self.background_color)
-        self.canvas.pack(ipadx=10, ipady=10, fill=tk.BOTH, expand=True)
-
+        self.canvas.pack(ipadx=10, ipady=80, fill=tk.BOTH, expand=True) 
 
         # Add text at the bottom of the right_frame
-        text_label = tk.Label(right_frame, text="Try with your hand", fg=self.text_color, bg=self.background_color, font=("Verdana", 28, "bold"))
-        text_label.pack(ipadx=10, ipady=10, anchor=tk.NW, expand=True)
+        text_label = ctk.CTkLabel(right_frame,text='"The difference between try and triumph is\n just a little umph!"', font=('Comic Sans MS',30,"bold",))
+        text_label.place(relx=0.4, rely=0.85,anchor=ctk.CENTER)
 
          #add volume
         # Create a frame to hold the widgets
         volume_frame = tk.Frame(right_frame, bg=self.background_color)
         volume_frame.pack(anchor=tk.SE)
         
-        # music_level_label = tk.Label(volume_frame, text="volume", font=("Verdana", 10, "bold"), bg=self.background_color, fg=self.text_color)
-        # music_level_label.grid(row=0, column=0,columnspan=2,padx=15, pady=15)
-        # Create and position the volume slider within the main frame
-        # music_level_scale = tk.Scale(volume_frame, from_=0, to=100, orient=tk.HORIZONTAL,
-        #                             bg=self.background_color, fg=self.text_color, highlightbackground=self.background_color, command=self.update_volume)
         music_level_scale = ctk.CTkSlider(volume_frame, from_=0, to=100, command=self.update_volume)
         music_level_scale.set(self.default_sound_value)
         music_level_scale.grid(row=1, column=1)
@@ -685,13 +655,10 @@ class Game:
         icon_label2 = tk.Label(volume_frame, image=icon2, bg=self.background_color)
         icon_label2.grid(row=1, column=0, sticky="s")
 
-        
-    
         # Start a thread to update the camera feed
         self.camera_thread = threading.Thread(target=update_camera)
         self.camera_thread.daemon = True
         self.camera_thread.start()
-
 
         # Bind the window closing event to the on_closing function
         self.learn_level_window.protocol("WM_DELETE_WINDOW", on_closing)
@@ -713,19 +680,21 @@ class Game:
         # Create the play game menu window
         self.game_menu_window = tk.Tk()
         self.game_menu_window.title("Play Game")
-        # width = self.game_menu_window.winfo_screenwidth()
-        # height= self.game_menu_window.winfo_screenheight() 
-        # self.game_menu_window.geometry("%dx%d" % (width, height)) 
-        self.game_menu_window.geometry("1000x1000")
+        self.game_menu_window.title("Sign-Saga")
+        self.game_menu_window.geometry("1000x1000") 
         self.game_menu_window.configure(bg=self.background_color)
-        background_image = ImageTk.PhotoImage(file=self.background_image_path)
-        canvas_widget = tk.Canvas(self.game_menu_window)
-        canvas_widget.pack(fill="both", expand=True)
-        canvas_widget.create_image(0, 0, image=background_image, anchor="nw")
+
+        width = self.game_menu_window.winfo_screenwidth()
+        height= self.game_menu_window.winfo_screenheight() 
+        self.game_menu_window.geometry("%dx%d" % (width, height))
+
+        image_path = "BackgroundImage.png" 
+        my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(width,height))
+        image_label = ctk.CTkLabel(self.game_menu_window, image=my_image, text="") 
+        image_label.pack()        
 
         # Add logo icon
         self.game_menu_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
-
 
         def level_1():
             self.random_level(total_time=300, character_change_time=20,game_level=1)
@@ -737,26 +706,46 @@ class Game:
             self.random_level(total_time=300, character_change_time=5,game_level=3)
 
       
-
         # Add a button to start the game
-        self.random_1_button = ctk.CTkButton(self.game_menu_window, text="Easy",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=level_1)
+        self.random_1_button = ctk.CTkButton(self.game_menu_window, text="Easy",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=level_1)
         self.random_1_button.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
 
         # Add a button to start the game
-        self.random_2_button = ctk.CTkButton(self.game_menu_window, text="Medium",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=level_2)
+        self.random_2_button = ctk.CTkButton(self.game_menu_window, text="Medium",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=level_2)
         self.random_2_button.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
 
         # Add a button to start the game
-        self.random_3_button = ctk.CTkButton(self.game_menu_window, text="Brutal",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=level_3)
+        self.random_3_button = ctk.CTkButton(self.game_menu_window, text="Brutal",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=level_3)
         self.random_3_button.place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
 
         # Add a "Back" button to return to the main menu
-        self.back_button = ctk.CTkButton(self.game_menu_window, text="Back",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=self.open_main_menu)
-        self.back_button.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
+        # self.back_button = ctk.CTkButton(self.game_menu_window, text= "Back",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.open_main_menu)
+        # self.back_button.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
+
+        self.back_button = ctk.CTkButton(self.game_menu_window, text="⨞ Back",height=40, width=50,fg_color="#146C94",hover_color="#28393a",corner_radius=10,border_width=0,command=self.open_main_menu)
+        self.back_button.place(relx=0.05, rely=0.05, anchor=ctk . CENTER)
+
+         #add volume
+        # Create a frame to hold the widgets
+        volume_frame = tk.Frame(self.game_menu_window, bg='black',)
+        volume_frame.place(relx=0.9, rely=.95, anchor=ctk.CENTER)
+
+        music_level_scale = ctk.CTkSlider(volume_frame, from_=0, to=100, command=self.update_volume)
+        music_level_scale.set(self.default_sound_value)
+        music_level_scale.grid(row=1, column=1)
+        icon_image1 = Image.open("./Game/game_data/Audio.png")
+        icon_image1 = icon_image1.resize((15, 15))  # Resize the image if needed
+        icon1 = ImageTk.PhotoImage(icon_image1)
+        icon_image2 = Image.open("./Game/game_data/NoAudio.png")
+        icon_image2 = icon_image2.resize((15, 15))  # Resize the image if needed
+        icon2 = ImageTk.PhotoImage(icon_image2)
+        icon_label1 = tk.Label(volume_frame, image=icon1, bg=self.background_color)
+        icon_label1.grid(row=1, column=2, sticky="s")
+        icon_label2 = tk.Label(volume_frame, image=icon2, bg=self.background_color)
+        icon_label2.grid(row=1, column=0, sticky="s")
 
         # Run the play game menu loop
         self.game_menu_window.mainloop()
-
 
 
     def open_score_window(self):
@@ -765,30 +754,43 @@ class Game:
             self.Main_window.destroy()
             self.Main_window = None
 
-        def sort_score(event):
+        def sort_score(tab):
             scores_obj = self.csv_manager.get_top_users()
-            tab = event.widget.tab('current')['text']
+            # tab = event.widget.tab('current')['text']
 
             if tab== 'level 1 scores':
                     level_data=scores_obj['Max_score_level_1']
                     clean_table(tab)
+                    n=0
                     for data in level_data :
-                        table.insert(parent='', index=0 , values=data)
+                        if n %2==0:
+                            table.insert(parent='', index=0 , values=data, tags=('evenrow',))
+                        else :
+                            table.insert(parent='', index=0 , values=data , tags=('oddrow',))
+                        n+=1
             elif tab== 'level 2 scores' :
                 level_data=scores_obj['Max_score_level_2']
                 clean_table(tab)
+                n=0
                 for data in level_data :
-                    table1.insert(parent='', index=0 , values=data)
+                    if n %2==0:
+                        table1.insert(parent='', index=0 , values=data,tags=('evenrow',))
+                    else:
+                        table1.insert(parent='', index=0 , values=data , tags=('oddrow',))
+                    n+=1
+
             elif tab== 'level 3 scores' :
                 level_data=scores_obj['Max_score_level_3']
                 clean_table(tab)
+                n=0
                 for data in level_data :
-                    table2.insert(parent='', index=0 , values=data)
-
-
+                    if n %2==0:
+                        table2.insert(parent='', index=0 , values=data,tags=('evenrow',))
+                    else:
+                        table2.insert(parent='', index=0 , values=data,tags=('oddrow',))
+                    n+=1
 
         def clean_table(tab) :
-
                 if tab== 'level 1 scores':
                     for item in table.get_children():
                         table.delete(item)
@@ -805,72 +807,122 @@ class Game:
         # Create the score window
         self.score_window = tk.Tk()
         self.score_window.title("Score Window")
-        # width = self.score_window.winfo_screenwidth()
-        # height= self.score_window.winfo_screenheight() 
-        # self.score_window.geometry("%dx%d" % (width, height))
-        self.score_window.geometry("1000x1000") 
+        width = self.score_window.winfo_screenwidth()
+        height= self.score_window.winfo_screenheight() 
+        self.score_window.geometry("%dx%d" % (width, height))
+
+        # self.score_window.geometry("1000x1000") 
         self.score_window.configure(bg=self.background_color)
-        background_image = ImageTk.PhotoImage(file=self.background_image_path)
-        canvas_widget = tk.Canvas(self.score_window)
-        canvas_widget.pack(fill="both", expand=True)
-        canvas_widget.create_image(0, 0, image=background_image, anchor="nw")
+        self.canvas = tk.Canvas(self.score_window, bg=self.background_color, highlightbackground=self.background_color)
+        # self.canvas.place(relx=0.2, rely=0.2,)
+        self.canvas.pack(ipadx=10, ipady=20, fill=tk.BOTH, expand=True)
+        # canvas_widget.create_image(0, 0, image=background_image, anchor="nw")
 
         # Add logo icon
         self.score_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        # Create a UserCSVManager instance
-        self.csv_manager = UserCSVManager(self.user_data_path)
-
-        
-
-        noteBook=ttk.Notebook(canvas_widget)
+        noteBook=ctk.CTkTabview(self.canvas, command=lambda :sort_score(noteBook.get()))    # ttk.Notebook(canvas_widget)
         noteBook.pack()
 
-
+        # Add some style
         style = ttk.Style()
-        style.configure('Custom.TFrame', background='blue')
-
-        tab1=ttk.Frame(noteBook ,style='Custom.TFrame')
-
-        table=ttk.Treeview(tab1 , column=('name', 'score'))
-        table.heading('name', text='player name')
-        table.heading('score', text='level 1 scores')
-        table.pack(fill='both' , expand=True)
+        #Pick a theme
+        style.theme_use("default")
+        # Configure our treeview colors
         
-        tab2=ttk.Frame(noteBook)
+        style.configure("Treeview",background="#2a2d2e", foreground="white",rowheight=25,fieldbackground=self.background_color,bordercolor=self.background_color,borderwidth=0,font=("Comic Sans MS",15))
+        
+        style.map('Treeview', background=[('selected', '#28393a')])
 
-        table1=ttk.Treeview(tab2 , column=('name', 'score'))
-        table1.heading('name', text='player name')
-        table1.heading('score', text='level 2 scores')
-        table1.pack()
+        style.configure("Treeview.Heading",
+                        background=self.background_color,
+                        foreground=self.background_color,
+                        relief="flat")
+        style.map("Treeview.Heading",
+                background=[('active', '#3484F0')])
+        
+        # --------------------------------------------------------------------
+        tab1=noteBook.add('level 1 scores')       #ttk.Frame(noteBook ,style='Custom.TFrame')
+        noteBook.set('level 1 scores')
+        
+        table=ttk.Treeview(tab1, column=('name','score'))
 
-        tab3=ttk.Frame(noteBook)
+        table.column('#0', width=0 , anchor=tk.W)
+        table.column('name' , anchor=tk.W , width=600)
+        table.column('score' , anchor=tk.W , width=600)
+
+        # table.heading('name', text='player name',anchor=tk.W)
+        # table.heading('score', text='level 1 scores',anchor=tk.W)
+        table.pack(fill='both' , expand=True , anchor=tk.W)
+        sort_score('level 1 scores')
+
+        # ----------------------------------------
+        tab2=noteBook.add('level 2 scores')             #ttk.Frame(noteBook)
+
+        table1=ttk.Treeview(tab2 ,column=('name', 'score'))
+
+        table1.column('#0', width=0 , anchor=tk.W)
+        table1.column('name' , anchor=tk.W , width=600)
+        table1.column('score' , anchor=tk.W , width=600)
+
+        # table1.heading('name', text='player name')
+        # table1.heading('score', text='level 2 scores')
+        table1.pack(fill='both' , expand=True , anchor=tk.W)
+        # --------------------------------------
+        tab3=noteBook.add('level 3 scores')                         #ttk.Frame(noteBook)
+
         table2=ttk.Treeview(tab3 , column=('name', 'score'))
-        table2.heading('name', text='player name')
-        table2.heading('score', text='level 3 scores')
-        table2.pack()
 
-        noteBook.add(tab1 ,text='level 1 scores')
-        noteBook.add(tab2 ,text='level 2 scores')
-        noteBook.add(tab3 ,text='level 3 scores')
+        table2.column('#0', width=0 , anchor=tk.W)
+        table2.column('name' , anchor=tk.W , width=600)
+        table2.column('score' , anchor=tk.W , width=600)
 
+        # table2.heading('name', text='player name')
+        # table2.heading('score', text='level 3 scores')
+        table2.pack(fill='both' , expand=True , anchor=tk.W)
+     
+        table.tag_configure('oddrow', background="#343638")
+        table.tag_configure('evenrow', background="#146C94")
 
-        noteBook.bind('<<NotebookTabChanged>>', sort_score)
-        
+        table1.tag_configure('oddrow', background="#343638")
+        table1.tag_configure('evenrow', background="#146C94")
 
-
-
+        table2.tag_configure('oddrow', background="#343638")
+        table2.tag_configure('evenrow', background="#146C94")
 
         # Add logo icon
         self.score_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-
         # Add a button to open top score
-        self.back_button_2 = ctk.CTkButton(self.Main_window, text="back ",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=self.open_main_menu)
-        self.back_button_2.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
+        # self.back_button_2 = ctk.CTkButton(self.Main_window, text="back",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.open_main_menu)
+        # self.back_button_2.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
+
+        self.back_button_2 = ctk.CTkButton(self.Main_window, text="⨞ Back",height=40, width=50,fg_color="#146C94",hover_color="#28393a",corner_radius=10,border_width=0,command=self.open_main_menu)
+        self.back_button_2.place(relx=0.05, rely=0.05, anchor=ctk . CENTER)
+
+            #add volume
+        # Create a frame to hold the widgets
+        volume_frame = tk.Frame(self.Main_window, bg='#28393a',)
+        volume_frame.place(relx=0.9, rely=.95, anchor=ctk.CENTER)
+        # volume_frame.pack(anchor=tk.SE)
+        
+        music_level_scale = ctk.CTkSlider(volume_frame, from_=0, to=100, command=self.update_volume)
+        music_level_scale.set(self.default_sound_value)
+        music_level_scale.grid(row=1, column=1)
+        icon_image1 = Image.open("./Game/game_data/Audio.png")
+        icon_image1 = icon_image1.resize((15, 15))  # Resize the image if needed
+        icon1 = ImageTk.PhotoImage(icon_image1)
+        icon_image2 = Image.open("./Game/game_data/NoAudio.png")
+        icon_image2 = icon_image2.resize((15, 15))  # Resize the image if needed
+        icon2 = ImageTk.PhotoImage(icon_image2)
+        icon_label1 = tk.Label(volume_frame, image=icon1, bg=self.background_color)
+        icon_label1.grid(row=1, column=2, sticky="s")
+        icon_label2 = tk.Label(volume_frame, image=icon2, bg=self.background_color)
+        icon_label2.grid(row=1, column=0, sticky="s")
 
         # Run the play game menu loop
         self.score_window.mainloop()
+    # ---------------------------------------------------------
 
     def open_main_menu(self):
         # Clear the game menu window
@@ -884,12 +936,14 @@ class Game:
 
         def populate_user_menu():
             users = self.csv_manager.get_users()
-            user_dropdown['menu'].delete(0, 'end')  # Clear the dropdown menu
-            for user in users:
-                user_dropdown['menu'].add_command(label=user, command=tk._setit(selected_user_var, user))
+            self.user_dropdown.pack_forget()  # Remove the existing dropdown menu
+            selected_user_var.set("")  # Reset the selected user variable
+            self.user_dropdown = ctk.CTkOptionMenu(self.Main_window, variable=selected_user_var, values=users)
+            self.user_dropdown.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
             if users:
                 selected_user_var.set(users[0])  # Set the first name as the default selection
-
+        
+      
         # Function to open the game menu
         def open_game_validation():
             user_name = nameEntry.get()
@@ -924,47 +978,71 @@ class Game:
         # Create a UserCSVManager instance
         self.csv_manager = UserCSVManager(self.user_data_path)
 
-
         # Create the main window
         self.Main_window = tk.Tk()
         self.Main_window.title("Sign-Saga")
         self.Main_window.geometry("1000x1000") 
         self.Main_window.configure(bg=self.background_color)
-        # width = self.Main_window.winfo_screenwidth()
-        # height= self.Main_window.winfo_screenheight() 
-        # self.Main_window.geometry("%dx%d" % (width, height)) 
-        background_image = ImageTk.PhotoImage(file=self.background_image_path)
-        canvas_widget = tk.Canvas(self.Main_window)
-        canvas_widget.pack(fill="both", expand=True)
-        canvas_widget.create_image(0, 0, image=background_image, anchor="nw")
+
+        width = self.Main_window.winfo_screenwidth()
+        height= self.Main_window.winfo_screenheight() 
+        self.Main_window.geometry("%dx%d" % (width, height)) 
+
+        image_path = "BackgroundImage.png"
+        my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(width,height))
+        image_label = ctk.CTkLabel(self.Main_window, image=my_image, text="") 
+        # image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
+        image_label.pack()
 
         # Add logo icon
         self.Main_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        nameEntry = ctk.CTkEntry(self.Main_window,placeholder_text="your name",height=40, width=500,corner_radius=10) 
-        nameEntry.place(relx=0.5, rely=0.5, anchor=ctk . CENTER)
-
-        # Create a dropdown menu to display the users
-        selected_user_var = tk.StringVar(self.Main_window)
-        user_dropdown = tk.OptionMenu(self.Main_window, selected_user_var, ())
-        user_dropdown.place(relx=0.5, rely=0.6,anchor=tk.CENTER)
+    #    Create a dropdown menu to display the users
+        selected_user_var = ctk.StringVar(self.Main_window)
+        users = self.csv_manager.get_users()
+        self.user_dropdown = ctk.CTkOptionMenu(self.Main_window, variable=selected_user_var, values=users,width=200)
+        self.user_dropdown.place(relx=0.5, rely=0.55, anchor=ctk . CENTER)
+        if users:
+            selected_user_var.set(users[0])  # Set the first name as the default selection
 
         # Populate the user dropdown menu
         populate_user_menu()
 
+        nameEntry = ctk.CTkEntry(self.Main_window,placeholder_text="your name",height=40, width=500,corner_radius=10) 
+        nameEntry.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
+
         # Add a button to open play_game_menu
-        self.Start_Play_button = ctk.CTkButton(self.Main_window, text="Start Play",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=open_game_validation)
+        self.Start_Play_button = ctk.CTkButton(self.Main_window, text="Start Play",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=open_game_validation)
         self.Start_Play_button.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
 
         # Add a button to open How to Play
-        self.learn_button = ctk.CTkButton(self.Main_window, text="How to Play",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=self.learn_level)
+        self.learn_button = ctk.CTkButton(self.Main_window, text="How to Play",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.learn_level)
         self.learn_button.place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
 
         # Add a button to open top score
-        self.open_score_button = ctk.CTkButton(self.Main_window, text="Top scores",height=40, width=500,fg_color=("#ff75c8", "#BF4698"),hover_color="#ff75c8",corner_radius=20,border_width=0,command=self.open_score_window)
+        self.open_score_button = ctk.CTkButton(self.Main_window, text="Top scores",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.open_score_window)
         self.open_score_button.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
 
+         #add volume
+        # Create a frame to hold the widgets
+        volume_frame = tk.Frame(self.Main_window, bg='black',)
+        volume_frame.place(relx=0.9, rely=.95, anchor=ctk.CENTER)
+        # volume_frame.pack(anchor=tk.SE)
         
+        music_level_scale = ctk.CTkSlider(volume_frame, from_=0, to=100, command=self.update_volume)
+        music_level_scale.set(self.default_sound_value)
+        music_level_scale.grid(row=1, column=1)
+        icon_image1 = Image.open("./Game/game_data/Audio.png")
+        icon_image1 = icon_image1.resize((15, 15))  # Resize the image if needed
+        icon1 = ImageTk.PhotoImage(icon_image1)
+        icon_image2 = Image.open("./Game/game_data/NoAudio.png")
+        icon_image2 = icon_image2.resize((15, 15))  # Resize the image if needed
+        icon2 = ImageTk.PhotoImage(icon_image2)
+        icon_label1 = tk.Label(volume_frame, image=icon1, bg=self.background_color)
+        icon_label1.grid(row=1, column=2, sticky="s")
+        icon_label2 = tk.Label(volume_frame, image=icon2, bg=self.background_color)
+        icon_label2.grid(row=1, column=0, sticky="s")
+
         # Run the main loop
         self.Main_window.mainloop()
 
@@ -974,12 +1052,3 @@ class Game:
         pygame.mixer.music.play(-1)  # Set -1 to play the track in a loop indefinitely
         self.update_volume(self.default_sound_value)
         self.open_main_menu()
-
-
-
-        
-
-
-
-
-
