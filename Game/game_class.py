@@ -12,6 +12,9 @@ import threading
 from Game.user_CSVManager_class import UserCSVManager
 import pygame
 
+
+import customtkinter
+
 # Initialize Pygame mixer
 pygame.mixer.init()
 
@@ -49,13 +52,9 @@ class Game:
 
         # Counter to track the number of times a predicted character matches the temporary character
         self.counter = 0
-
         self.two_hand = None
-
         self.total_game_time_seconds = 0
-
         self.random_character_change_time_seconds = 0
-
         self.total_score = 0
 
         self.Max_score_level_1 = 0
@@ -414,7 +413,14 @@ class Game:
 
         # Create the main window
         self.random_level_window = tk.Toplevel()
-        self.random_level_window.geometry("1300x800") 
+        # self.random_level_window.geometry("1300x800") 
+        width = self.random_level_window.winfo_screenwidth()
+        height= self.random_level_window.winfo_screenheight() 
+        self.random_level_window.geometry("%dx%d" % (width, height)) 
+
+        
+
+
         self.random_level_window.title("Level 1")
         self.random_level_window.configure(bg=self.background_color)
 
@@ -498,10 +504,10 @@ class Game:
         # # Create a canvas on the right side
         self.canvas = tk.Canvas(right_frame, bg=self.background_color, highlightthickness=5, highlightbackground=self.background_color)
         # self.canvas.place(relx=0.2, rely=0.2,)
-        self.canvas.pack(ipadx=10, ipady=20, fill=tk.BOTH, expand=True)
+        self.canvas.pack(ipadx=10, ipady=80, fill=tk.BOTH, expand=True) 
 
         # Add text at the bottom of the right_frame
-        text_label = tk.Label(right_frame, text="Try to predict the character", fg=self.text_color, bg=self.background_color, font=("Verdana", 20, "bold"))
+        text_label = tk.Label(right_frame, text='"Unlock your potential and let \nthe game ignite your passion."', fg=self.text_color, bg=self.background_color, font=("Verdana", 20, "bold"))
         # text_label.pack(ipadx=10, ipady=20, anchor=tk.NW, expand=True)
         text_label.place(relx=0.3, rely=0.8, anchor="center")
 
@@ -575,7 +581,7 @@ class Game:
 
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert color format from BGR to RGB
                 img = Image.fromarray(frame)  # Create an Image object from the frame
-                img = img.resize((1000,700))  # Adjust the size of the image as needed
+                img = img.resize((1000, 700))  # Adjust the size of the image as needed
 
                 # Create a border around the image
                 border_size = 1
@@ -599,7 +605,13 @@ class Game:
      
         # Create the main window
         self.learn_level_window = tk.Toplevel()
-        self.learn_level_window.geometry("1300x800")
+
+        # self.learn_level_window.geometry("1300x800")
+        width = self.learn_level_window.winfo_screenwidth()
+        height= self.learn_level_window.winfo_screenheight() 
+
+        self.learn_level_window.geometry("%dx%d" % (width, height)) 
+
         self.learn_level_window.title("How To Play")
         self.learn_level_window.configure(bg=self.background_color)
 
@@ -671,6 +683,7 @@ class Game:
         # Clear the main menu window
         if  self.Main_window != None:
             self.Main_window.destroy()
+            
 
         user_scores = self.csv_manager.get_user_scores(self.user_name)
         self.Max_score_level_1 = user_scores["Max_score_level_1"]
@@ -681,7 +694,7 @@ class Game:
         self.game_menu_window = tk.Tk()
         self.game_menu_window.title("Play Game")
         self.game_menu_window.title("Sign-Saga")
-        self.game_menu_window.geometry("1000x1000") 
+        # self.game_menu_window.geometry("1000x1000") 
         self.game_menu_window.configure(bg=self.background_color)
 
         width = self.game_menu_window.winfo_screenwidth()
@@ -707,22 +720,19 @@ class Game:
 
       
         # Add a button to start the game
-        self.random_1_button = ctk.CTkButton(self.game_menu_window, text="Easy",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=level_1)
+        self.random_1_button = ctk.CTkButton(self.game_menu_window, text="⭐ Easy ⭐",height=50, width=350,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25,"bold"),command=level_1)
         self.random_1_button.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
 
         # Add a button to start the game
-        self.random_2_button = ctk.CTkButton(self.game_menu_window, text="Medium",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=level_2)
+        self.random_2_button = ctk.CTkButton(self.game_menu_window, text="⭐⭐ Medium ⭐⭐",height=50, width=350,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25,"bold"),command=level_2)
         self.random_2_button.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
 
         # Add a button to start the game
-        self.random_3_button = ctk.CTkButton(self.game_menu_window, text="Brutal",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=level_3)
+        self.random_3_button = ctk.CTkButton(self.game_menu_window, text="⭐⭐⭐ Brutal ⭐⭐⭐",height=50, width=350,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25,"bold"),command=level_3)
         self.random_3_button.place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
 
         # Add a "Back" button to return to the main menu
-        # self.back_button = ctk.CTkButton(self.game_menu_window, text= "Back",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.open_main_menu)
-        # self.back_button.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
-
-        self.back_button = ctk.CTkButton(self.game_menu_window, text="⨞ Back",height=40, width=50,fg_color="#146C94",hover_color="#28393a",corner_radius=10,border_width=0,command=self.open_main_menu)
+        self.back_button = ctk.CTkButton(self.game_menu_window, text="⬅️Back",height=50, width=60,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25, "bold"),command=self.open_main_menu)
         self.back_button.place(relx=0.05, rely=0.05, anchor=ctk . CENTER)
 
          #add volume
@@ -762,6 +772,7 @@ class Game:
                     level_data=scores_obj['Max_score_level_1']
                     clean_table(tab)
                     n=0
+                    # sorted(level_data, key=lambda x:x[1]) ////////////////////////////////////////////////////********
                     for data in level_data :
                         if n %2==0:
                             table.insert(parent='', index=0 , values=data, tags=('evenrow',))
@@ -803,25 +814,33 @@ class Game:
                     for item in table2.get_children():
                         table2.delete(item)
 
-
         # Create the score window
         self.score_window = tk.Tk()
         self.score_window.title("Score Window")
         width = self.score_window.winfo_screenwidth()
         height= self.score_window.winfo_screenheight() 
         self.score_window.geometry("%dx%d" % (width, height))
-
         # self.score_window.geometry("1000x1000") 
         self.score_window.configure(bg=self.background_color)
-        self.canvas = tk.Canvas(self.score_window, bg=self.background_color, highlightbackground=self.background_color)
-        # self.canvas.place(relx=0.2, rely=0.2,)
-        self.canvas.pack(ipadx=10, ipady=20, fill=tk.BOTH, expand=True)
-        # canvas_widget.create_image(0, 0, image=background_image, anchor="nw")
+
+        
+        self.canvas = tk.Canvas(self.score_window, bg=self.background_color, highlightbackground=self.background_color) #**
+        self.canvas.place(relx=0.15, rely=0.03,)
+        # self.canvas.pack(ipadx=100, ipady=505, fill=tk.BOTH, expand=True) #**
+
+        # image_path = "293347565.jpg"
+        # my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(width,height))
+        # image_label = ctk.CTkLabel(self.score_window, image=my_image, text="") 
+        # image_label.pack()
 
         # Add logo icon
         self.score_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        noteBook=ctk.CTkTabview(self.canvas, command=lambda :sort_score(noteBook.get()))    # ttk.Notebook(canvas_widget)
+        noteBook=ctk.CTkTabview(self.canvas, command=lambda :sort_score(noteBook.get()),
+                                corner_radius=20,
+                                border_width=5,
+                                border_color="white")    # ttk.Notebook(canvas_widget)
+        
         noteBook.pack()
 
         # Add some style
@@ -830,7 +849,16 @@ class Game:
         style.theme_use("default")
         # Configure our treeview colors
         
-        style.configure("Treeview",background="#2a2d2e", foreground="white",rowheight=25,fieldbackground=self.background_color,bordercolor=self.background_color,borderwidth=0,font=("Comic Sans MS",15))
+        style.configure("Treeview",
+                        background="#2a2d2e", 
+                        foreground="white",
+                        rowheight=40,
+                        # corner_radius = 50,
+                        fieldbackground=self.background_color,
+                        bordercolor=self.background_color,
+                        borderwidth=0,
+                        # image = "293347565.jpg",
+                        font=("Comic Sans MS",15,"bold"))
         
         style.map('Treeview', background=[('selected', '#28393a')])
 
@@ -839,7 +867,8 @@ class Game:
                         foreground=self.background_color,
                         relief="flat")
         style.map("Treeview.Heading",
-                background=[('active', '#3484F0')])
+                background=[('active', '#3484F0')],
+                )
         
         # --------------------------------------------------------------------
         tab1=noteBook.add('level 1 scores')       #ttk.Frame(noteBook ,style='Custom.TFrame')
@@ -847,8 +876,8 @@ class Game:
         
         table=ttk.Treeview(tab1, column=('name','score'))
 
-        table.column('#0', width=0 , anchor=tk.W)
-        table.column('name' , anchor=tk.W , width=600)
+        table.column('#0', width=0 , anchor=tk.CENTER)
+        table.column('name' , anchor=tk.W , width=600,)
         table.column('score' , anchor=tk.W , width=600)
 
         # table.heading('name', text='player name',anchor=tk.W)
@@ -869,7 +898,7 @@ class Game:
         # table1.heading('score', text='level 2 scores')
         table1.pack(fill='both' , expand=True , anchor=tk.W)
         # --------------------------------------
-        tab3=noteBook.add('level 3 scores')                         #ttk.Frame(noteBook)
+        tab3=noteBook.add('level 3 scores',)                         #ttk.Frame(noteBook)
 
         table2=ttk.Treeview(tab3 , column=('name', 'score'))
 
@@ -891,18 +920,14 @@ class Game:
         table2.tag_configure('evenrow', background="#146C94")
 
         # Add logo icon
-        self.score_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
+        # self.score_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        # Add a button to open top score
-        # self.back_button_2 = ctk.CTkButton(self.Main_window, text="back",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.open_main_menu)
-        # self.back_button_2.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
-
-        self.back_button_2 = ctk.CTkButton(self.Main_window, text="⨞ Back",height=40, width=50,fg_color="#146C94",hover_color="#28393a",corner_radius=10,border_width=0,command=self.open_main_menu)
+        self.back_button_2 = ctk.CTkButton(self.score_window, text="⬅️Back",height=50, width=60,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25, "bold"),command=self.open_main_menu)
         self.back_button_2.place(relx=0.05, rely=0.05, anchor=ctk . CENTER)
 
-            #add volume
+         #add volume
         # Create a frame to hold the widgets
-        volume_frame = tk.Frame(self.Main_window, bg='#28393a',)
+        volume_frame = tk.Frame(self.score_window, bg='#28393a',)
         volume_frame.place(relx=0.9, rely=.95, anchor=ctk.CENTER)
         # volume_frame.pack(anchor=tk.SE)
         
@@ -922,7 +947,7 @@ class Game:
 
         # Run the play game menu loop
         self.score_window.mainloop()
-    # ---------------------------------------------------------
+    #---------------------------------------    
 
     def open_main_menu(self):
         # Clear the game menu window
@@ -934,43 +959,55 @@ class Game:
             self.score_window.destroy()
             self.score_window = None
 
+        def update_selected_user(choice):
+            self.user_name = str(choice)
+            nameEntry.configure(placeholder_text=self.user_name)
+            selected_user_var.set(self.user_name)
+            
+
         def populate_user_menu():
             users = self.csv_manager.get_users()
-            self.user_dropdown.pack_forget()  # Remove the existing dropdown menu
-            selected_user_var.set("")  # Reset the selected user variable
-            self.user_dropdown = ctk.CTkOptionMenu(self.Main_window, variable=selected_user_var, values=users)
-            self.user_dropdown.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
-            if users:
-                selected_user_var.set(users[0])  # Set the first name as the default selection
+            users.pop(0)
+            self.user_dropdown.configure(values=users)
+            nameEntry.configure(placeholder_text=self.user_name)
         
       
         # Function to open the game menu
         def open_game_validation():
             user_name = nameEntry.get()
             if user_name:
-                user_name = user_name.lower()
                 if user_name in self.csv_manager.get_users():
-                    result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game menu with the user {user_name}")
+                    self.user_name = user_name
+                    selected_user_var.set(self.user_name)
+                    if defult_name == user_name:
+                        result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game without user")
+                    else:
+                        result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game menu with {user_name} user ")
                     if result == 'yes':
-                        self.user_name = user_name
                         self.open_game_menu()
         
                 else:
                     self.csv_manager.add_user(user_name)
-                    populate_user_menu()
                     selected_user_var.set(user_name)  # Set the newly added name as the selected user
-                    result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game menu with the user {user_name}")
+                    self.user_name = user_name
+                    populate_user_menu()
+                    if defult_name == user_name:
+                        result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game without user")
+                    else:
+                        result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game menu with {user_name} user ")
                     if result == 'yes':
-                        self.user_name = user_name
                         self.open_game_menu()
                       
-                #entry.delete(0, tk.END)
             else:
                 selected_user = selected_user_var.get()
                 if selected_user:
-                    result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game menu with the user {selected_user}")
+                    self.user_name = selected_user
+                    nameEntry.configure(placeholder_text=selected_user)
+                    if defult_name == selected_user:
+                        result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game without user")
+                    else:
+                        result = tk.messagebox.askquestion("Game Menu", f"are you sure you want to open the game menu with {selected_user} user ")
                     if result == 'yes':
-                        self.user_name = selected_user
                         self.open_game_menu()
                 else:
                     tk.messagebox.showwarning("Error", "Please select a user.")
@@ -981,7 +1018,7 @@ class Game:
         # Create the main window
         self.Main_window = tk.Tk()
         self.Main_window.title("Sign-Saga")
-        self.Main_window.geometry("1000x1000") 
+        # self.Main_window.geometry("1000x1000") 
         self.Main_window.configure(bg=self.background_color)
 
         width = self.Main_window.winfo_screenwidth()
@@ -991,39 +1028,41 @@ class Game:
         image_path = "BackgroundImage.png"
         my_image = ctk.CTkImage(dark_image=Image.open(image_path),size=(width,height))
         image_label = ctk.CTkLabel(self.Main_window, image=my_image, text="") 
-        # image_label.place(relx=0.5, rely=0.2, anchor=ctk . CENTER)
         image_label.pack()
 
         # Add logo icon
         self.Main_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
     #    Create a dropdown menu to display the users
+       # Create a dropdown menu to display the users
         selected_user_var = ctk.StringVar(self.Main_window)
         users = self.csv_manager.get_users()
-        self.user_dropdown = ctk.CTkOptionMenu(self.Main_window, variable=selected_user_var, values=users,width=200)
-        self.user_dropdown.place(relx=0.5, rely=0.55, anchor=ctk . CENTER)
-        if users:
-            selected_user_var.set(users[0])  # Set the first name as the default selection
+        if self.user_name == None:
+            self.user_name = users.pop(0)
+            defult_name = self.user_name
+        else:
+            defult_name = users.pop(0)
 
-        # Populate the user dropdown menu
-        populate_user_menu()
+        selected_user_var.set(self.user_name)
+        self.user_dropdown = ctk.CTkOptionMenu(self.Main_window, variable=selected_user_var, values=users,height=40,width=200,font=("Verdana", 20,"bold"),fg_color="#146C94",command=update_selected_user)
+        self.user_dropdown.place(relx=0.44, rely=0.6, anchor=ctk . CENTER)
 
-        nameEntry = ctk.CTkEntry(self.Main_window,placeholder_text="your name",height=40, width=500,corner_radius=10) 
-        nameEntry.place(relx=0.5, rely=0.6, anchor=ctk . CENTER)
-
+        nameEntry = ctk.CTkEntry(self.Main_window,placeholder_text=self.user_name,height=40, width=200,corner_radius=10,font=("Verdana", 20,"bold")) 
+        nameEntry.place(relx=0.56, rely=0.6, anchor=ctk . CENTER)
+    
         # Add a button to open play_game_menu
-        self.Start_Play_button = ctk.CTkButton(self.Main_window, text="Start Play",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=open_game_validation)
+        self.Start_Play_button = ctk.CTkButton(self.Main_window, text="⚔️ Start Play ⚔️",height=50, width=400,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25,"bold"),command=open_game_validation)
         self.Start_Play_button.place(relx=0.5, rely=0.7, anchor=ctk . CENTER)
 
         # Add a button to open How to Play
-        self.learn_button = ctk.CTkButton(self.Main_window, text="How to Play",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.learn_level)
+        self.learn_button = ctk.CTkButton(self.Main_window, text="⚓ How to Play",height=50, width=400,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25,"bold"),command=self.learn_level)
         self.learn_button.place(relx=0.5, rely=0.8, anchor=ctk . CENTER)
 
         # Add a button to open top score
-        self.open_score_button = ctk.CTkButton(self.Main_window, text="Top scores",height=40, width=500,fg_color="#146C94",hover_color="#28393a",corner_radius=20,border_width=0,command=self.open_score_window)
+        self.open_score_button = ctk.CTkButton(self.Main_window, text="👑 Top scores",height=50, width=400,fg_color="#146C94",hover_color="#28393a",font=("Verdana", 25,"bold"),command=self.open_score_window)
         self.open_score_button.place(relx=0.5, rely=0.9, anchor=ctk . CENTER)
 
-         #add volume
+        #add volume
         # Create a frame to hold the widgets
         volume_frame = tk.Frame(self.Main_window, bg='black',)
         volume_frame.place(relx=0.9, rely=.95, anchor=ctk.CENTER)
