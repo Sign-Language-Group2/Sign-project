@@ -42,11 +42,12 @@ class UserCSVManager:
             reader = csv.reader(file)
             header = next(reader)  # Get the header row
             for row in reader:
-                if row[0] == user_name:
-                    for i in range(1, 4):
-                        if int(scores[i]) > int(row[i]):
-                            row[i] = str(scores[i])
-                data.append(row)
+                if(len(row)==4):
+                    if row[0] == user_name:
+                        for i in range(1, 4):
+                            if int(scores[i]) > int(row[i]):
+                                row[i] = str(scores[i])
+                    data.append(row)
         with open(self.file_path, 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(header)  # Write the header row
