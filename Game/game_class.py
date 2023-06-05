@@ -1,3 +1,5 @@
+import sys 
+sys.path.insert(1,r'C:\Users\myips\Desktop\signProject\Sign-project\.venv\Lib\site-packages')
 import pickle
 import random
 import cv2
@@ -754,54 +756,29 @@ class Game:
             self.Main_window.destroy()
             self.Main_window = None
 
-        def sort_score(tab):
+        def sort_score(tab,level):
             scores_obj = self.csv_manager.get_top_users()
-            # tab = event.widget.tab('current')['text']
+            
+            tab=tab
+            score_level.set(level)
+            level_data=scores_obj[tab]
+            clean_table(tab)
+            n=0
 
-            if tab== 'level 1 scores':
-                    level_data=scores_obj['Max_score_level_1']
-                    clean_table(tab)
-                    n=0
-                    for data in level_data :
-                        if n %2==0:
-                            table.insert(parent='', index=0 , values=data, tags=('evenrow',))
-                        else :
-                            table.insert(parent='', index=0 , values=data , tags=('oddrow',))
-                        n+=1
-            elif tab== 'level 2 scores' :
-                level_data=scores_obj['Max_score_level_2']
-                clean_table(tab)
-                n=0
-                for data in level_data :
-                    if n %2==0:
-                        table1.insert(parent='', index=0 , values=data,tags=('evenrow',))
-                    else:
-                        table1.insert(parent='', index=0 , values=data , tags=('oddrow',))
-                    n+=1
+            for data in level_data :
+                if n %2==0:
+                    table.insert(parent='', index=0 , values=data, tags=('evenrow',))
+                else :
+                    table.insert(parent='', index=0 , values=data , tags=('oddrow',))
 
-            elif tab== 'level 3 scores' :
-                level_data=scores_obj['Max_score_level_3']
-                clean_table(tab)
-                n=0
-                for data in level_data :
-                    if n %2==0:
-                        table2.insert(parent='', index=0 , values=data,tags=('evenrow',))
-                    else:
-                        table2.insert(parent='', index=0 , values=data,tags=('oddrow',))
-                    n+=1
+                n+=1
+
+            
+        
 
         def clean_table(tab) :
-                if tab== 'level 1 scores':
-                    for item in table.get_children():
-                        table.delete(item)
-                    
-                elif tab== 'level 2 scores' :
-                    for item in table1.get_children():
-                        table1.delete(item)
-                
-                elif tab== 'level 3 scores':
-                    for item in table2.get_children():
-                        table2.delete(item)
+            for item in table.get_children():
+                table.delete(item)
 
 
         # Create the score window
@@ -819,10 +796,11 @@ class Game:
         # canvas_widget.create_image(0, 0, image=background_image, anchor="nw")
 
         # Add logo icon
+        # ###########################################################################################################
         self.score_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
 
-        noteBook=ctk.CTkTabview(self.canvas, command=lambda :sort_score(noteBook.get()))    # ttk.Notebook(canvas_widget)
-        noteBook.pack()
+        # noteBook=ctk.CTkTabview(self.canvas, command=lambda :sort_score(noteBook.get()))    # ttk.Notebook(canvas_widget)
+        # noteBook.pack()
 
         # Add some style
         style = ttk.Style()
@@ -830,65 +808,84 @@ class Game:
         style.theme_use("default")
         # Configure our treeview colors
         
-        style.configure("Treeview",background="#2a2d2e", foreground="white",rowheight=25,fieldbackground=self.background_color,bordercolor=self.background_color,borderwidth=0,font=("Comic Sans MS",15))
+        style.configure("Treeview",background="#2a2d2e", foreground="green",
+                rowheight=25,fieldbackground=self.background_color,
+                bordercolor=self.background_color,borderwidth=0,
+                font=("Comic Sans MS",15))
         
         style.map('Treeview', background=[('selected', '#28393a')])
 
         style.configure("Treeview.Heading",
                         background=self.background_color,
-                        foreground=self.background_color,
-                        relief="flat")
+                        foreground='red',
+                        relief="flat",
+                        bordercolor=self.background_color,
+                        borderwidth=3,
+                        font=("Comic Sans MS",15))
+
         style.map("Treeview.Heading",
                 background=[('active', '#3484F0')])
         
         # --------------------------------------------------------------------
-        tab1=noteBook.add('level 1 scores')       #ttk.Frame(noteBook ,style='Custom.TFrame')
-        noteBook.set('level 1 scores')
+        # tab1=noteBook.add('level 1 scores')       #ttk.Frame(noteBook ,style='Custom.TFrame')
+        # noteBook.set('level 1 scores')
         
-        table=ttk.Treeview(tab1, column=('name','score'))
+        lv_1_btn=ttk.Button(self.canvas,text='level 1 scores' , command=lambda :sort_score('Max_score_level_1','level 1 scores'))
+        lv_1_btn.pack()
+
+        lv_2_btn=ttk.Button(self.canvas,text='level 2 scores' , command=lambda :sort_score('Max_score_level_2','level 2 scores'))
+        lv_2_btn.pack()
+
+        lv_3_btn=ttk.Button(self.canvas,text='level 3 scores' , command=lambda :sort_score('Max_score_level_3','level 3 scores'))
+        lv_3_btn.pack()
+
+
+        table=ttk.Treeview(self.canvas, column=('name','score'))
 
         table.column('#0', width=0 , anchor=tk.W)
-        table.column('name' , anchor=tk.W , width=600)
-        table.column('score' , anchor=tk.W , width=600)
+        table.column('name' , anchor=tk.CENTER , width=400)
+        table.column('score' , anchor=tk.CENTER , width=400)
 
-        # table.heading('name', text='player name',anchor=tk.W)
-        # table.heading('score', text='level 1 scores',anchor=tk.W)
-        table.pack(fill='both' , expand=True , anchor=tk.W)
-        sort_score('level 1 scores')
+        score_level=tk.StringVar(value='level 1 scores')
 
+        table.heading('name', text='player name',anchor=tk.CENTER)
+        table.heading('score',text=score_level.get() ,anchor=tk.CENTER)
+        table.pack(padx=10, pady=30,anchor=tk.CENTER)
+        sort_score('Max_score_level_1','level 1 scores')
+        
         # ----------------------------------------
-        tab2=noteBook.add('level 2 scores')             #ttk.Frame(noteBook)
+        # tab2=noteBook.add('level 2 scores')             #ttk.Frame(noteBook)
 
-        table1=ttk.Treeview(tab2 ,column=('name', 'score'))
+        # table1=ttk.Treeview(tab2 ,column=('name', 'score'))
 
-        table1.column('#0', width=0 , anchor=tk.W)
-        table1.column('name' , anchor=tk.W , width=600)
-        table1.column('score' , anchor=tk.W , width=600)
+        # table1.column('#0', width=0 , anchor=tk.W)
+        # table1.column('name' , anchor=tk.W , width=600)
+        # table1.column('score' , anchor=tk.W , width=600)
 
         # table1.heading('name', text='player name')
         # table1.heading('score', text='level 2 scores')
-        table1.pack(fill='both' , expand=True , anchor=tk.W)
+        # table1.pack(fill='both' , expand=True , anchor=tk.W)
         # --------------------------------------
-        tab3=noteBook.add('level 3 scores')                         #ttk.Frame(noteBook)
+        # tab3=noteBook.add('level 3 scores')                         #ttk.Frame(noteBook)
 
-        table2=ttk.Treeview(tab3 , column=('name', 'score'))
+        # table2=ttk.Treeview(tab3 , column=('name', 'score'))
 
-        table2.column('#0', width=0 , anchor=tk.W)
-        table2.column('name' , anchor=tk.W , width=600)
-        table2.column('score' , anchor=tk.W , width=600)
+        # table2.column('#0', width=0 , anchor=tk.W)
+        # table2.column('name' , anchor=tk.W , width=600)
+        # table2.column('score' , anchor=tk.W , width=600)
 
         # table2.heading('name', text='player name')
         # table2.heading('score', text='level 3 scores')
-        table2.pack(fill='both' , expand=True , anchor=tk.W)
+        # table2.pack(fill='both' , expand=True , anchor=tk.W)
      
         table.tag_configure('oddrow', background="#343638")
         table.tag_configure('evenrow', background="#146C94")
 
-        table1.tag_configure('oddrow', background="#343638")
-        table1.tag_configure('evenrow', background="#146C94")
+        # table1.tag_configure('oddrow', background="#343638")
+        # table1.tag_configure('evenrow', background="#146C94")
 
-        table2.tag_configure('oddrow', background="#343638")
-        table2.tag_configure('evenrow', background="#146C94")
+        # table2.tag_configure('oddrow', background="#343638")
+        # table2.tag_configure('evenrow', background="#146C94")
 
         # Add logo icon
         self.score_window.iconphoto(False, tk.PhotoImage(file = self.logo_path))
